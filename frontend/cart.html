@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Корзина</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="cart-page-body">
+    <main class="cart-page">
+        <header class="cart-header">
+            <div>
+                <p class="eyebrow">Ваш заказ</p>
+                <h1>Корзина</h1>
+            </div>
+            <a class="back-link back-link-top" href="index.html">← Вернуться к меню</a>
+        </header>
+
+        <div class="cart-layout">
+            <section class="cart-panel" aria-label="Добавленные блюда">
+                <div class="cart-table-heading">
+                    <span>Добавлено</span>
+                    <span>Цена за единицу</span>
+                    <span>Количество</span>
+                    <span>Общая цена</span>
+                </div>
+
+                <div id="cart-items"></div>
+
+                <div class="empty-cart" id="empty-cart" hidden>
+                    <div class="empty-cart-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M3 3h2l2.4 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.6L21 7H6M10 20a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm9 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/>
+                        </svg>
+                    </div>
+                    <h2>Корзина пока пуста</h2>
+                    <p>Вернитесь в меню и добавьте блюда.</p>
+                </div>
+            </section>
+
+            <aside class="order-summary">
+                <h2>Ваш заказ</h2>
+                <div class="summary-line">
+                    <span>Количество блюд</span>
+                    <strong id="summary-count">0</strong>
+                </div>
+                <div class="summary-line summary-total">
+                    <span>Итого</span>
+                    <strong id="summary-total">0 ₸</strong>
+                </div>
+                <button class="order-btn" id="order-btn" type="button">Заказать</button>
+                <a class="back-link back-link-button" href="index.html">Вернуться к меню</a>
+            </aside>
+        </div>
+    </main>
+
+    <div class="order-modal" id="order-modal" hidden>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <div class="success-mark">✓</div>
+            <h2 id="modal-title">Заказ оформлен!</h2>
+            <p>Спасибо! Ваш заказ принят.</p>
+            <a href="index.html" class="order-btn modal-button">Вернуться к меню</a>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

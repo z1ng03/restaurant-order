@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Меню ресторана</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="menu-page">
+        <aside class="categories" aria-label="Категории меню">
+            <h1 class="side-title">Меню</h1>
+            <button class="category-btn active" data-category="hot">Горячие</button>
+            <button class="category-btn" data-category="cold">Холодные</button>
+            <button class="category-btn" data-category="snacks">Закуски</button>
+            <button class="category-btn" data-category="drinks">Напитки</button>
+            <button class="category-btn" data-category="hookah">Кальяны</button>
+        </aside>
+
+        <main class="products-area">
+            <div class="products-heading">
+                <div>
+                    <p class="eyebrow">Ресторанное меню</p>
+                    <h2 id="category-title">Горячие блюда</h2>
+                </div>
+                <p class="products-count" id="products-count"></p>
+            </div>
+
+            <section class="products" id="products" aria-live="polite"></section>
+        </main>
+
+        <a class="cart-link" href="cart.html" aria-label="Открыть корзину">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 3h2l2.4 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.6L21 7H6M10 20a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm9 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/>
+            </svg>
+            <span class="cart-label">Корзина</span>
+            <span class="cart-badge" id="cart-count">0</span>
+        </a>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <div class="dish-modal" id="dish-modal" hidden>
+        <div class="dish-modal-card" role="dialog" aria-modal="true" aria-labelledby="dish-modal-title">
+            <button class="dish-modal-close" id="dish-modal-close" type="button" aria-label="Закрыть описание">×</button>
+
+            <div class="dish-modal-image">
+                <img id="dish-modal-image" src="" alt="">
+            </div>
+
+            <div class="dish-modal-content">
+                <p class="eyebrow">Информация о блюде</p>
+                <h2 id="dish-modal-title"></h2>
+                <p class="dish-description" id="dish-description"></p>
+
+                <section class="dish-info-section">
+                    <h3>Состав</h3>
+                    <p id="dish-ingredients"></p>
+                </section>
+
+                <section class="dish-info-section">
+                    <h3>Энергетическая ценность одной порции</h3>
+                    <div class="nutrition-grid">
+                        <div><strong id="dish-calories"></strong><span>ккал</span></div>
+                        <div><strong id="dish-protein"></strong><span>белки</span></div>
+                        <div><strong id="dish-fat"></strong><span>жиры</span></div>
+                        <div><strong id="dish-carbs"></strong><span>углеводы</span></div>
+                    </div>
+                </section>
+
+                <section class="allergy-warning">
+                    <span class="warning-icon" aria-hidden="true">!</span>
+                    <div>
+                        <h3>Возможные аллергические реакции</h3>
+                        <p id="dish-allergens"></p>
+                    </div>
+                </section>
+
+                <div class="dish-modal-footer">
+                    <strong class="dish-modal-price" id="dish-modal-price"></strong>
+                    <button class="add-cart modal-add-cart" id="dish-modal-add" type="button">Добавить в корзину</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
