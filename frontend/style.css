@@ -88,6 +88,21 @@ button {
     color: var(--dark);
 }
 
+.age-restricted-category span {
+    display: inline-grid;
+    place-items: center;
+    min-width: 34px;
+    height: 24px;
+    margin-left: 4px;
+    border-radius: 20px;
+    background: #8c2540;
+    color: var(--white);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    vertical-align: middle;
+}
+
 .products-area {
     min-width: 0;
 }
@@ -506,6 +521,30 @@ button {
     margin-bottom: 28px;
 }
 
+.cart-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.clear-cart-btn {
+    padding: 10px 14px;
+    border: 1px solid rgba(255, 115, 115, 0.55);
+    border-radius: 8px;
+    background: transparent;
+    color: #ffb0b0;
+    cursor: pointer;
+}
+
+.clear-cart-btn:hover {
+    background: rgba(181, 50, 50, 0.2);
+}
+
+.clear-cart-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.35;
+}
+
 .back-link {
     color: var(--white);
     text-decoration: none;
@@ -542,7 +581,7 @@ button {
 .cart-table-heading,
 .cart-item {
     display: grid;
-    grid-template-columns: minmax(240px, 2fr) minmax(130px, 0.8fr) minmax(150px, 0.8fr) minmax(130px, 0.8fr);
+    grid-template-columns: minmax(330px, 2.2fr) minmax(130px, 0.75fr) minmax(150px, 0.75fr) minmax(130px, 0.75fr);
     align-items: center;
     gap: 18px;
 }
@@ -563,7 +602,7 @@ button {
 
 .cart-product {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     min-width: 0;
     gap: 15px;
 }
@@ -582,6 +621,50 @@ button {
     font-family: Georgia, "Times New Roman", serif;
     font-size: 19px;
     font-weight: 400;
+}
+
+.cart-product-labels {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.age-badge {
+    display: inline-grid;
+    place-items: center;
+    min-width: 31px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 20px;
+    background: #8c2540;
+    color: var(--white);
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.cart-item-description {
+    max-width: 480px;
+    margin: 7px 0 6px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.cart-item-composition {
+    max-width: 480px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.cart-item-composition summary {
+    width: max-content;
+    color: var(--accent);
+    cursor: pointer;
+}
+
+.cart-item-composition p {
+    margin: 6px 0 0;
+    line-height: 1.4;
 }
 
 .added-label {
@@ -774,6 +857,348 @@ button {
     display: flex;
 }
 
+/* Окна оформления заказа и оплаты */
+.checkout-modal {
+    position: fixed;
+    z-index: 50;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    overflow-y: auto;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.74);
+}
+
+.checkout-modal[hidden] {
+    display: none;
+}
+
+.checkout-modal .modal-card {
+    position: relative;
+}
+
+.compact-modal {
+    width: min(410px, 100%);
+}
+
+.modal-symbol,
+.age-mark,
+.result-mark {
+    display: grid;
+    place-items: center;
+    width: 74px;
+    height: 74px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--dark);
+    font-size: 34px;
+    font-weight: 900;
+}
+
+.age-mark {
+    background: #8c2540;
+    color: var(--white);
+    font-size: 25px;
+}
+
+.modal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.vertical-actions {
+    grid-template-columns: 1fr;
+}
+
+.secondary-btn,
+.danger-btn {
+    min-height: 48px;
+    padding: 10px 16px;
+    border-radius: 9px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.secondary-btn {
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--white);
+}
+
+.secondary-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.danger-btn {
+    border: 0;
+    background: #a83d3d;
+    color: var(--white);
+}
+
+.danger-btn:hover {
+    background: #c34848;
+}
+
+.age-modal-card small {
+    display: block;
+    margin-top: 18px;
+    color: #bdbdbd;
+    line-height: 1.4;
+}
+
+.payment-modal-card {
+    width: min(580px, 100%);
+    text-align: left;
+}
+
+.modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 38px;
+    height: 38px;
+    padding: 0 0 3px;
+    border: 0;
+    border-radius: 50%;
+    background: #3d3d3d;
+    color: var(--white);
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.payment-total-line {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0 !important;
+    padding: 13px 15px;
+    border-radius: 8px;
+    background: #464646;
+}
+
+.payment-total-line strong {
+    color: var(--accent);
+}
+
+.payment-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.payment-option {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    min-height: 105px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    background: #4c4c4c;
+    color: var(--white);
+    text-align: left;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.payment-option:hover {
+    border-color: var(--accent);
+    background: #535353;
+    transform: translateY(-2px);
+}
+
+.payment-option > span:last-child,
+.payment-option strong,
+.payment-option small {
+    display: block;
+}
+
+.payment-option small {
+    margin-top: 5px;
+    color: var(--muted);
+    line-height: 1.3;
+}
+
+.payment-icon {
+    display: grid;
+    place-items: center;
+    width: 55px;
+    height: 55px;
+    flex: 0 0 auto;
+    border-radius: 10px;
+    background: var(--accent);
+    color: var(--dark);
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.payment-option:last-child .payment-icon {
+    font-size: 13px;
+}
+
+.rfid-modal-card {
+    width: min(500px, 100%);
+}
+
+.rfid-animation {
+    position: relative;
+    width: 150px;
+    height: 105px;
+    margin: 0 auto 15px;
+}
+
+.rfid-card-shape {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    width: 92px;
+    height: 62px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), #ffd98a);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.22);
+}
+
+.rfid-card-shape::after {
+    content: "RFID";
+    position: absolute;
+    left: 12px;
+    bottom: 10px;
+    color: var(--dark);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.rfid-wave {
+    position: absolute;
+    border: 4px solid var(--accent);
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+    border-radius: 50%;
+    transform: rotate(45deg);
+    animation: rfid-pulse 1.4s infinite;
+}
+
+.wave-one {
+    top: 31px;
+    right: 30px;
+    width: 35px;
+    height: 35px;
+}
+
+.wave-two {
+    top: 14px;
+    right: 12px;
+    width: 70px;
+    height: 70px;
+    animation-delay: 0.3s;
+}
+
+@keyframes rfid-pulse {
+    0%, 100% { opacity: 0.25; }
+    50% { opacity: 1; }
+}
+
+.waiting-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0 0 18px;
+    color: var(--accent);
+}
+
+.waiting-indicator[hidden] {
+    display: none;
+}
+
+.waiting-indicator span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: waiting-dot 1s infinite alternate;
+}
+
+.waiting-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.waiting-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes waiting-dot {
+    from { opacity: 0.25; transform: translateY(2px); }
+    to { opacity: 1; transform: translateY(-2px); }
+}
+
+.waiting-indicator strong {
+    width: 100%;
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+.full-width-btn {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.demo-controls {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.demo-controls summary {
+    color: var(--accent);
+    cursor: pointer;
+}
+
+.demo-controls p {
+    margin: 10px 0 !important;
+    font-size: 12px;
+}
+
+.demo-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.demo-buttons button {
+    min-height: 38px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: #444;
+    color: var(--white);
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.demo-buttons button:first-child:hover {
+    border-color: #65c37c;
+}
+
+.demo-buttons button:last-child:hover {
+    border-color: #e06b6b;
+}
+
+.result-modal-card.result-success .result-mark {
+    background: #55ad6b;
+    color: var(--white);
+}
+
+.result-modal-card.result-failure .result-mark {
+    background: #b74444;
+    color: var(--white);
+}
+
+.result-modal-card.result-failure .order-btn {
+    background: #b74444;
+    color: var(--white);
+}
+
 @media (max-width: 1050px) {
     .menu-page {
         grid-template-columns: minmax(150px, 20vw) minmax(0, 1fr) 90px;
@@ -788,7 +1213,7 @@ button {
     }
 
     .cart-item {
-        grid-template-columns: minmax(210px, 1.6fr) 1fr 1fr;
+        grid-template-columns: minmax(300px, 1.6fr) 1fr 1fr;
     }
 
     .item-total {
@@ -908,6 +1333,11 @@ button {
         flex-direction: column;
     }
 
+    .cart-header-actions {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
     .cart-item {
         grid-template-columns: 1fr;
     }
@@ -947,5 +1377,9 @@ button {
     .dish-modal-footer {
         align-items: stretch;
         flex-direction: column;
+    }
+
+    .payment-options {
+        grid-template-columns: 1fr;
     }
 }

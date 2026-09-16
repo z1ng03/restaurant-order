@@ -13,7 +13,10 @@
                 <p class="eyebrow">Ваш заказ</p>
                 <h1>Корзина</h1>
             </div>
-            <a class="back-link back-link-top" href="index.html">← Вернуться к меню</a>
+            <div class="cart-header-actions">
+                <button class="clear-cart-btn" id="clear-cart-btn" type="button">Очистить корзину</button>
+                <a class="back-link back-link-top" href="index.html">← Вернуться к меню</a>
+            </div>
         </header>
 
         <div class="cart-layout">
@@ -54,12 +57,89 @@
         </div>
     </main>
 
-    <div class="order-modal" id="order-modal" hidden>
-        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-            <div class="success-mark">✓</div>
-            <h2 id="modal-title">Заказ оформлен!</h2>
-            <p>Спасибо! Ваш заказ принят.</p>
-            <a href="index.html" class="order-btn modal-button">Вернуться к меню</a>
+    <!-- Подтверждение очистки корзины -->
+    <div class="checkout-modal" id="clear-modal" hidden>
+        <div class="modal-card compact-modal" role="dialog" aria-modal="true" aria-labelledby="clear-modal-title">
+            <div class="modal-symbol">🗑</div>
+            <h2 id="clear-modal-title">Очистить корзину?</h2>
+            <p>Все добавленные блюда будут удалены.</p>
+            <div class="modal-actions">
+                <button class="secondary-btn" id="clear-cancel-btn" type="button">Отмена</button>
+                <button class="danger-btn" id="clear-confirm-btn" type="button">Очистить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Проверка возраста для алкоголя и кальянов -->
+    <div class="checkout-modal" id="age-modal" hidden>
+        <div class="modal-card age-modal-card" role="dialog" aria-modal="true" aria-labelledby="age-modal-title">
+            <div class="age-mark">21+</div>
+            <h2 id="age-modal-title">Подтвердите возраст</h2>
+            <p>В заказе есть алкоголь или кальян. Подтвердите, что вам исполнился 21 год.</p>
+            <div class="modal-actions vertical-actions">
+                <button class="order-btn" id="age-confirm-btn" type="button">Мне есть 21 год</button>
+                <button class="secondary-btn" id="age-decline-btn" type="button">Мне нет 21 года</button>
+            </div>
+            <small>Сотрудник может попросить документ, удостоверяющий возраст.</small>
+        </div>
+    </div>
+
+    <!-- Выбор способа оплаты -->
+    <div class="checkout-modal" id="payment-modal" hidden>
+        <div class="modal-card payment-modal-card" role="dialog" aria-modal="true" aria-labelledby="payment-modal-title">
+            <button class="modal-close" id="payment-close-btn" type="button" aria-label="Закрыть">×</button>
+            <p class="eyebrow">Шаг оплаты</p>
+            <h2 id="payment-modal-title">Выберите способ оплаты</h2>
+            <p class="payment-total-line">К оплате: <strong id="payment-total">0 ₸</strong></p>
+            <div class="payment-options">
+                <button class="payment-option" id="cash-payment-btn" type="button">
+                    <span class="payment-icon">₸</span>
+                    <span><strong>Наличными</strong><small>Оплата сотруднику при получении</small></span>
+                </button>
+                <button class="payment-option" id="card-payment-btn" type="button">
+                    <span class="payment-icon"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M880-720v480q0 33-23.5 56.5T800-160H160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720Zm-720 80h640v-80H160v80Zm0 160v240h640v-240H160Zm0 240v-480 480Z"/></svg></span>
+                    <span><strong>Картой</strong><small>Считывание через Arduino и RC522</small></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ожидание ответа Arduino + RC522 -->
+    <div class="checkout-modal" id="rfid-modal" hidden>
+        <div class="modal-card rfid-modal-card" role="dialog" aria-modal="true" aria-labelledby="rfid-modal-title">
+            <div class="rfid-animation" aria-hidden="true">
+                <span class="rfid-card-shape"></span>
+                <span class="rfid-wave wave-one"></span>
+                <span class="rfid-wave wave-two"></span>
+            </div>
+            <h2 id="rfid-modal-title">Оплата картой</h2>
+            <p id="rfid-status">Приложите банковскую/дебетовую карту.</p>
+            <div class="waiting-indicator" id="rfid-waiting" hidden>
+                <span></span><span></span><span></span>
+                <strong>Ожидание ответа Arduino…</strong>
+            </div>
+            <button class="order-btn" id="rfid-connect-btn" type="button">Перейти к оплате заказа</button>
+            <button class="secondary-btn full-width-btn" id="rfid-cancel-btn" type="button">Отменить оплату</button>
+
+            <details class="demo-controls">
+                <summary>Демонстрация без Arduino</summary>
+                <p>Кнопки нужны для проверки обоих вариантов ответа.</p>
+                <div class="demo-buttons">
+                    <button id="demo-approved-btn" type="button">PAYMENT_APPROVED</button>
+                    <button id="demo-declined-btn" type="button">PAYMENT_DECLINED</button>
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <!-- Результат оплаты или проверки -->
+    <div class="checkout-modal" id="result-modal" hidden>
+        <div class="modal-card result-modal-card" id="result-card" role="dialog" aria-modal="true" aria-labelledby="result-title">
+            <div class="result-mark" id="result-mark">✓</div>
+            <h2 id="result-title">Оплата прошла</h2>
+            <p id="result-message"></p>
+            <button class="order-btn modal-button" id="result-primary-btn" type="button">Вернуться в меню</button>
+            <button class="secondary-btn full-width-btn" id="result-close-btn" type="button">Закрыть</button>
         </div>
     </div>
 

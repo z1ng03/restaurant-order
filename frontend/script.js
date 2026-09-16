@@ -103,6 +103,27 @@ const MENU = [
         ingredients: "Кальянная смесь, свежий фрукт, ароматизаторы, глицерин, уголь.",
         nutrition: { calories: "—", protein: "—", fat: "—", carbs: "—" },
         allergens: "Возможна реакция на выбранный фрукт или ароматизаторы. Смесь может содержать никотин. Только для совершеннолетних."
+    },
+    {
+        id: 16, category: "alcohol", name: "Красное вино", price: 3200, image: "images/alcohol.svg",
+        description: "Бокал сухого красного вина с насыщенным ягодным ароматом.",
+        ingredients: "Красное виноградное вино, диоксид серы. Объём порции — 150 мл.",
+        nutrition: { calories: "125", protein: "0 г", fat: "0 г", carbs: "4 г" },
+        allergens: "Содержит сульфиты. Алкоголь противопоказан несовершеннолетним, беременным и людям с индивидуальной непереносимостью."
+    },
+    {
+        id: 17, category: "alcohol", name: "Светлое пиво", price: 1800, image: "images/alcohol.svg",
+        description: "Охлаждённое светлое пиво с мягким солодовым вкусом.",
+        ingredients: "Вода, ячменный солод, хмель, дрожжи. Объём порции — 500 мл.",
+        nutrition: { calories: "215", protein: "2 г", fat: "0 г", carbs: "17 г" },
+        allergens: "Содержит глютен и ячмень. Алкоголь противопоказан несовершеннолетним, беременным и людям с индивидуальной непереносимостью."
+    },
+    {
+        id: 18, category: "alcohol", name: "Авторский коктейль", price: 3500, image: "images/alcohol.svg",
+        description: "Фирменный алкогольный коктейль с цитрусовыми нотами.",
+        ingredients: "Джин, цитрусовый сок, сахарный сироп, тоник, лёд. Объём порции — 300 мл.",
+        nutrition: { calories: "240", protein: "0 г", fat: "0 г", carbs: "28 г" },
+        allergens: "Возможна реакция на цитрусовые и компоненты тоника. Алкоголь противопоказан несовершеннолетним, беременным и людям с индивидуальной непереносимостью."
     }
 ];
 
@@ -111,6 +132,7 @@ const CATEGORY_TITLES = {
     cold: "Холодные блюда",
     snacks: "Закуски",
     drinks: "Напитки",
+    alcohol: "Алкоголь 21+",
     hookah: "Кальяны"
 };
 
@@ -273,22 +295,42 @@ function changeQuantity(id, difference) {
     renderCart();
 }
 
+function isAgeRestricted(item) {
+    return item.category === "alcohol" || item.category === "hookah";
+}
+
+function getCartEntries() {
+    const cart = getCart();
+    return Object.entries(cart)
+        .map(([id, quantity]) => ({ item: MENU.find(product => product.id === Number(id)), quantity }))
+        .filter(entry => entry.item && entry.quantity > 0);
+}
+
+function getCartTotal(entries = getCartEntries()) {
+    return entries.reduce((sum, entry) => sum + entry.item.price * entry.quantity, 0);
+}
+
 function renderCart() {
     const container = document.getElementById("cart-items");
     if (!container) return;
 
-    const cart = getCart();
-    const entries = Object.entries(cart)
-        .map(([id, quantity]) => ({ item: MENU.find(product => product.id === Number(id)), quantity }))
-        .filter(entry => entry.item && entry.quantity > 0);
+    const entries = getCartEntries();
 
     container.innerHTML = entries.map(({ item, quantity }) => `
         <article class="cart-item">
             <div class="cart-product">
                 <img src="${item.image}" alt="${item.name}">
                 <div>
-                    <span class="added-label">Добавлено</span>
+                    <div class="cart-product-labels">
+                        <span class="added-label">Добавлено</span>
+                        ${isAgeRestricted(item) ? '<span class="age-badge">21+</span>' : ''}
+                    </div>
                     <h3>${item.name}</h3>
+                    <p class="cart-item-description">${item.description}</p>
+                    <details class="cart-item-composition">
+                        <summary>Состав</summary>
+                        <p>${item.ingredients}</p>
+                    </details>
                 </div>
             </div>
             <div class="unit-price" data-label="Цена за единицу">${formatPrice(item.price)}</div>
@@ -302,7 +344,7 @@ function renderCart() {
     `).join("");
 
     const count = entries.reduce((sum, entry) => sum + entry.quantity, 0);
-    const total = entries.reduce((sum, entry) => sum + entry.item.price * entry.quantity, 0);
+    const total = getCartTotal(entries);
     document.getElementById("summary-count").textContent = count;
     document.getElementById("summary-total").textContent = formatPrice(total);
     document.getElementById("empty-cart").hidden = entries.length !== 0;
@@ -310,11 +352,206 @@ function renderCart() {
     const orderButton = document.getElementById("order-btn");
     orderButton.disabled = entries.length === 0;
 
+    const clearButton = document.getElementById("clear-cart-btn");
+    if (clearButton) clearButton.disabled = entries.length === 0;
+
     container.querySelectorAll("[data-change-id]").forEach(button => {
         button.addEventListener("click", () => {
             changeQuantity(Number(button.dataset.changeId), Number(button.dataset.difference));
         });
     });
+}
+
+let serialPort = null;
+let serialReader = null;
+let rfidPaymentActive = false;
+let resultAction = "close";
+
+function setCheckoutModal(id, isOpen) {
+    const modal = document.getElementById(id);
+    if (!modal) return;
+    modal.hidden = !isOpen;
+    const hasOpenModal = document.querySelector(".checkout-modal:not([hidden])");
+    document.body.classList.toggle("modal-open", Boolean(hasOpenModal));
+}
+
+function cartContainsRestrictedItems() {
+    return getCartEntries().some(({ item }) => isAgeRestricted(item));
+}
+
+function showPaymentSelection() {
+    document.getElementById("payment-total").textContent = formatPrice(getCartTotal());
+    setCheckoutModal("payment-modal", true);
+}
+
+function showPaymentResult({ success, title, message, action = "close", primaryText }) {
+    const card = document.getElementById("result-card");
+    const mark = document.getElementById("result-mark");
+    card.classList.toggle("result-success", success);
+    card.classList.toggle("result-failure", !success);
+    mark.textContent = success ? "✓" : "×";
+    document.getElementById("result-title").textContent = title;
+    document.getElementById("result-message").textContent = message;
+    document.getElementById("result-primary-btn").textContent = primaryText || (success ? "Вернуться в меню" : "Повторить оплату");
+    resultAction = action;
+    setCheckoutModal("result-modal", true);
+}
+
+function completeOrder(method) {
+    localStorage.removeItem(CART_KEY);
+    renderCart();
+
+    if (method === "cash") {
+        showPaymentResult({
+            success: true,
+            title: "Заказ принят",
+            message: "Вы выбрали оплату наличными. Передайте сумму сотруднику при получении заказа.",
+            action: "menu"
+        });
+        return;
+    }
+
+    showPaymentResult({
+        success: true,
+        title: "Оплата подтверждена",
+        message: "Arduino получил данные RFID-карты и подтвердил оплату. Заказ успешно оформлен.",
+        action: "menu"
+    });
+}
+
+function resetRfidWindow() {
+    document.getElementById("rfid-status").textContent = "Подключите Arduino с модулем RC522.";
+    document.getElementById("rfid-waiting").hidden = true;
+    const connectButton = document.getElementById("rfid-connect-btn");
+    connectButton.disabled = false;
+    connectButton.textContent = "Подключить RFID-считыватель";
+}
+
+function openRfidPayment() {
+    resetRfidWindow();
+    setCheckoutModal("rfid-modal", true);
+}
+
+async function sendSerialCommand(command) {
+    if (!serialPort || !serialPort.writable) return;
+    const writer = serialPort.writable.getWriter();
+    try {
+        await writer.write(new TextEncoder().encode(`${command}\n`));
+    } finally {
+        writer.releaseLock();
+    }
+}
+
+function handleArduinoMessage(rawMessage) {
+    const message = rawMessage.trim().toUpperCase();
+    if (!message) return;
+
+    if (message === "PAYMENT_APPROVED" || message === "APPROVED") {
+        rfidPaymentActive = false;
+        setCheckoutModal("rfid-modal", false);
+        completeOrder("rfid");
+        return;
+    }
+
+    if (message === "PAYMENT_DECLINED" || message === "DECLINED") {
+        rfidPaymentActive = false;
+        setCheckoutModal("rfid-modal", false);
+        showPaymentResult({
+            success: false,
+            title: "Оплата отклонена",
+            message: "RFID-карта не распознана или Arduino отклонил операцию. Попробуйте снова либо выберите наличную оплату.",
+            action: "retry"
+        });
+    }
+}
+
+async function listenToArduino() {
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    try {
+        serialReader = serialPort.readable.getReader();
+        while (rfidPaymentActive) {
+            const { value, done } = await serialReader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split(/\r?\n/);
+            buffer = lines.pop() || "";
+            lines.forEach(handleArduinoMessage);
+        }
+    } catch (error) {
+        if (rfidPaymentActive) {
+            rfidPaymentActive = false;
+            setCheckoutModal("rfid-modal", false);
+            showPaymentResult({
+                success: false,
+                title: "Связь потеряна",
+                message: "Не удалось получить ответ от Arduino. Проверьте USB-подключение и повторите оплату.",
+                action: "retry"
+            });
+        }
+    } finally {
+        if (serialReader) {
+            serialReader.releaseLock();
+            serialReader = null;
+        }
+        if (serialPort) {
+            try {
+                await serialPort.close();
+            } catch {
+                // Порт уже мог быть закрыт пользователем.
+            }
+            serialPort = null;
+        }
+    }
+}
+
+async function connectRfidReader() {
+    const status = document.getElementById("rfid-status");
+    const waiting = document.getElementById("rfid-waiting");
+    const connectButton = document.getElementById("rfid-connect-btn");
+
+    if (!("serial" in navigator)) {
+        status.textContent = "Web Serial недоступен. Откройте проект через localhost в Chrome или Edge либо используйте демонстрационный режим ниже.";
+        return;
+    }
+
+    try {
+        connectButton.disabled = true;
+        connectButton.textContent = "Подключение…";
+        status.textContent = "Выберите Arduino в системном окне подключения.";
+        serialPort = await navigator.serial.requestPort();
+        await serialPort.open({ baudRate: 9600 });
+
+        rfidPaymentActive = true;
+        status.textContent = "Приложите RFID-карту к считывателю RC522.";
+        waiting.hidden = false;
+        connectButton.textContent = "Считыватель подключён";
+        await sendSerialCommand("START_PAYMENT");
+        void listenToArduino();
+    } catch (error) {
+        connectButton.disabled = false;
+        connectButton.textContent = "Повторить подключение";
+        waiting.hidden = true;
+        status.textContent = error.name === "NotFoundError"
+            ? "Подключение отменено. Выберите Arduino, чтобы продолжить."
+            : "Ошибка подключения. Проверьте Arduino, USB-кабель и доступ к COM-порту.";
+        serialPort = null;
+    }
+}
+
+async function cancelRfidPayment() {
+    rfidPaymentActive = false;
+    if (serialReader) {
+        try {
+            await serialReader.cancel();
+        } catch {
+            // Соединение уже могло завершиться.
+        }
+    }
+    setCheckoutModal("rfid-modal", false);
+    showPaymentSelection();
 }
 
 function initCartPage() {
@@ -324,8 +561,67 @@ function initCartPage() {
     renderCart();
     orderButton.addEventListener("click", () => {
         if (cartCount() === 0) return;
+        if (cartContainsRestrictedItems()) {
+            setCheckoutModal("age-modal", true);
+        } else {
+            showPaymentSelection();
+        }
+    });
+
+    document.getElementById("clear-cart-btn").addEventListener("click", () => {
+        if (cartCount() > 0) setCheckoutModal("clear-modal", true);
+    });
+    document.getElementById("clear-cancel-btn").addEventListener("click", () => setCheckoutModal("clear-modal", false));
+    document.getElementById("clear-confirm-btn").addEventListener("click", () => {
         localStorage.removeItem(CART_KEY);
-        document.getElementById("order-modal").hidden = false;
+        setCheckoutModal("clear-modal", false);
+        renderCart();
+    });
+
+    document.getElementById("age-confirm-btn").addEventListener("click", () => {
+        setCheckoutModal("age-modal", false);
+        showPaymentSelection();
+    });
+    document.getElementById("age-decline-btn").addEventListener("click", () => {
+        setCheckoutModal("age-modal", false);
+        showPaymentResult({
+            success: false,
+            title: "Возраст не подтверждён",
+            message: "Оформить заказ с алкоголем или кальяном без подтверждения возраста нельзя. Удалите товары 21+ из корзины.",
+            action: "close",
+            primaryText: "Вернуться к корзине"
+        });
+    });
+
+    document.getElementById("payment-close-btn").addEventListener("click", () => setCheckoutModal("payment-modal", false));
+    document.getElementById("cash-payment-btn").addEventListener("click", () => {
+        setCheckoutModal("payment-modal", false);
+        completeOrder("cash");
+    });
+    document.getElementById("card-payment-btn").addEventListener("click", () => {
+        setCheckoutModal("payment-modal", false);
+        openRfidPayment();
+    });
+
+    document.getElementById("rfid-connect-btn").addEventListener("click", connectRfidReader);
+    document.getElementById("rfid-cancel-btn").addEventListener("click", cancelRfidPayment);
+    document.getElementById("demo-approved-btn").addEventListener("click", () => handleArduinoMessage("PAYMENT_APPROVED"));
+    document.getElementById("demo-declined-btn").addEventListener("click", () => handleArduinoMessage("PAYMENT_DECLINED"));
+
+    document.getElementById("result-primary-btn").addEventListener("click", () => {
+        setCheckoutModal("result-modal", false);
+        if (resultAction === "menu") {
+            window.location.href = "index.html";
+        } else if (resultAction === "retry") {
+            showPaymentSelection();
+        }
+    });
+    document.getElementById("result-close-btn").addEventListener("click", () => setCheckoutModal("result-modal", false));
+
+    document.querySelectorAll(".checkout-modal").forEach(modal => {
+        modal.addEventListener("click", event => {
+            if (event.target === modal && modal.id !== "rfid-modal") setCheckoutModal(modal.id, false);
+        });
     });
 }
 
