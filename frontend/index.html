@@ -10,19 +10,15 @@
     <div class="menu-page">
         <aside class="categories" aria-label="Категории меню">
             <h1 class="side-title">Меню</h1>
-            <button class="category-btn active" data-category="hot">Горячие</button>
-            <button class="category-btn" data-category="cold">Холодные</button>
-            <button class="category-btn" data-category="snacks">Закуски</button>
-            <button class="category-btn" data-category="drinks">Напитки</button>
-            <button class="category-btn age-restricted-category" data-category="alcohol">Алкоголь <span>21+</span></button>
-            <button class="category-btn" data-category="hookah">Кальяны</button>
+            <p class="table-indicator" id="table-indicator"></p>
+            <div id="category-buttons"><!-- filled from GET /api/menu --></div>
         </aside>
 
         <main class="products-area">
             <div class="products-heading">
                 <div>
                     <p class="eyebrow">Ресторанное меню</p>
-                    <h2 id="category-title">Горячие блюда</h2>
+                    <h2 id="category-title">Меню</h2>
                 </div>
                 <p class="products-count" id="products-count"></p>
             </div>
@@ -59,23 +55,20 @@
                     <p id="dish-ingredients"></p>
                 </section>
 
-                <section class="dish-info-section">
-                    <h3>Энергетическая ценность одной порции</h3>
-                    <div class="nutrition-grid">
-                        <div><strong id="dish-calories"></strong><span>ккал</span></div>
-                        <div><strong id="dish-protein"></strong><span>белки</span></div>
-                        <div><strong id="dish-fat"></strong><span>жиры</span></div>
-                        <div><strong id="dish-carbs"></strong><span>углеводы</span></div>
-                    </div>
+                <section class="dish-info-section" id="dish-options-section" hidden>
+                    <h3>Дополнительно</h3>
+                    <div id="dish-options-list" class="dish-options-list"></div>
                 </section>
 
-                <section class="allergy-warning">
+                <section class="allergy-warning" id="dish-allergy-section" hidden>
                     <span class="warning-icon" aria-hidden="true">!</span>
                     <div>
-                        <h3>Возможные аллергические реакции</h3>
+                        <h3>Возможные аллергены</h3>
                         <p id="dish-allergens"></p>
                     </div>
                 </section>
+
+                <p class="unavailable-note" id="dish-unavailable-note" hidden>Сейчас недостаточно ингредиентов для этого блюда.</p>
 
                 <div class="dish-modal-footer">
                     <strong class="dish-modal-price" id="dish-modal-price"></strong>
@@ -85,6 +78,8 @@
         </div>
     </div>
 
+    <script src="api.js"></script>
+    <script src="session.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

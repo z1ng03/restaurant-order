@@ -51,6 +51,7 @@
                     <span>Итого</span>
                     <strong id="summary-total">0 ₸</strong>
                 </div>
+                <p class="checkout-issues" id="checkout-issues" hidden></p>
                 <button class="order-btn" id="order-btn" type="button">Заказать</button>
                 <a class="back-link back-link-button" href="index.html">Вернуться к меню</a>
             </aside>
@@ -70,17 +71,26 @@
         </div>
     </div>
 
-    <!-- Проверка возраста для алкоголя и кальянов -->
+    <!-- ТЗ §5: возраст подтверждает официант, а не сам клиент -->
     <div class="checkout-modal" id="age-modal" hidden>
         <div class="modal-card age-modal-card" role="dialog" aria-modal="true" aria-labelledby="age-modal-title">
             <div class="age-mark">21+</div>
-            <h2 id="age-modal-title">Подтвердите возраст</h2>
-            <p>В заказе есть алкоголь или кальян. Подтвердите, что вам исполнился 21 год.</p>
-            <div class="modal-actions vertical-actions">
-                <button class="order-btn" id="age-confirm-btn" type="button">Мне есть 21 год</button>
-                <button class="secondary-btn" id="age-decline-btn" type="button">Мне нет 21 года</button>
-            </div>
-            <small>Сотрудник может попросить документ, удостоверяющий возраст.</small>
+            <h2 id="age-modal-title">Требуется подтверждение возраста</h2>
+            <p>В заказе есть алкоголь или кальян. Позовите официанта — он проверит документ и подтвердит здесь.</p>
+            <form id="age-form" class="age-form">
+                <label>Логин официанта
+                    <input type="text" id="waiter-login" name="waiterLogin" autocomplete="username" required>
+                </label>
+                <label>Пароль
+                    <input type="password" id="waiter-password" name="waiterPassword" autocomplete="current-password" required>
+                </label>
+                <p class="age-form-error" id="age-form-error" hidden></p>
+                <div class="modal-actions vertical-actions">
+                    <button class="order-btn" id="age-confirm-btn" type="submit">Возраст подтверждён (21+)</button>
+                    <button class="secondary-btn" id="age-decline-btn" type="button">Клиенту нет 21 года</button>
+                </div>
+            </form>
+            <small>Для входа используйте свой логин официанта (например, aigerim / waiter123 в демо-данных).</small>
         </div>
     </div>
 
@@ -94,17 +104,17 @@
             <div class="payment-options">
                 <button class="payment-option" id="cash-payment-btn" type="button">
                     <span class="payment-icon">₸</span>
-                    <span><strong>Наличными</strong><small>Оплата сотруднику при получении</small></span>
+                    <span><strong>Наличными</strong><small>Оплата официанту при получении</small></span>
                 </button>
                 <button class="payment-option" id="card-payment-btn" type="button">
                     <span class="payment-icon"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M880-720v480q0 33-23.5 56.5T800-160H160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720Zm-720 80h640v-80H160v80Zm0 160v240h640v-240H160Zm0 240v-480 480Z"/></svg></span>
-                    <span><strong>Картой</strong><small>Считывание через Arduino и RC522</small></span>
+                    <span><strong>Kaspi QR</strong><small>Считывание через Arduino и RC522 (имитация)</small></span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Ожидание ответа Arduino + RC522 -->
+    <!-- Ожидание ответа Arduino + RC522 (имитация подтверждения Kaspi QR) -->
     <div class="checkout-modal" id="rfid-modal" hidden>
         <div class="modal-card rfid-modal-card" role="dialog" aria-modal="true" aria-labelledby="rfid-modal-title">
             <div class="rfid-animation" aria-hidden="true">
@@ -112,13 +122,13 @@
                 <span class="rfid-wave wave-one"></span>
                 <span class="rfid-wave wave-two"></span>
             </div>
-            <h2 id="rfid-modal-title">Оплата картой</h2>
-            <p id="rfid-status">Приложите банковскую/дебетовую карту.</p>
+            <h2 id="rfid-modal-title">Оплата Kaspi QR</h2>
+            <p id="rfid-status">Приложите карту к монитору для имитации оплаты.</p>
             <div class="waiting-indicator" id="rfid-waiting" hidden>
                 <span></span><span></span><span></span>
                 <strong>Ожидание ответа Arduino…</strong>
             </div>
-            <button class="order-btn" id="rfid-connect-btn" type="button">Перейти к оплате заказа</button>
+            <button class="order-btn" id="rfid-connect-btn" type="button">Подключить RFID-считыватель</button>
             <button class="secondary-btn full-width-btn" id="rfid-cancel-btn" type="button">Отменить оплату</button>
 
             <details class="demo-controls">
@@ -143,6 +153,9 @@
         </div>
     </div>
 
+    <script src="api.js"></script>
+    <script src="session.js"></script>
+    <script src="serial-payment.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

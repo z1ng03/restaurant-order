@@ -1383,3 +1383,207 @@ button {
         grid-template-columns: 1fr;
     }
 }
+
+/* ==========================================================================
+   Additions for backend integration (real menu/cart data, availability,
+   dish options, age-verification-by-waiter, checkout issues) and for the
+   new kitchen/waiter monitors + local dev table picker.
+   ========================================================================== */
+
+.table-indicator {
+    margin: -4px 0 4px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.menu-load-error {
+    padding: 20px;
+    color: var(--muted);
+}
+
+/* Availability (ТЗ §2: available computed from Recipe + Inventory) */
+.card.unavailable .card-image-wrap img {
+    filter: grayscale(0.6);
+    opacity: 0.55;
+}
+
+.unavailable-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 5px 9px;
+    border-radius: 7px;
+    background: rgba(168, 61, 61, 0.92);
+    color: var(--white);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.card-age-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.unavailable-note {
+    margin: -8px 0 16px;
+    color: #e08a8a;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.add-cart:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    transform: none !important;
+}
+
+/* Dish options (ADDED: cart_item_options — ТЗ §4 lets a client pick extras) */
+.dish-options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dish-option-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    cursor: pointer;
+}
+
+.dish-option-row input {
+    width: 17px;
+    height: 17px;
+    accent-color: var(--accent);
+}
+
+.dish-option-row span:nth-child(2) {
+    flex: 1;
+}
+
+.dish-option-price {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+/* Checkout validation issues (ТЗ §5) */
+.checkout-issues {
+    margin: 0 0 14px;
+    padding: 12px 14px;
+    border: 1px solid rgba(168, 61, 61, 0.5);
+    border-radius: 9px;
+    background: rgba(168, 61, 61, 0.15);
+    color: #f0caca;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Age verification form (ТЗ §6: officiant confirms, not the client) */
+.age-form {
+    text-align: left;
+}
+
+.age-form label {
+    display: block;
+    margin-bottom: 12px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.age-form input {
+    width: 100%;
+    margin-top: 6px;
+    padding: 11px 13px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel-light);
+    color: var(--white);
+    font-size: 15px;
+}
+
+.age-form input:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.age-form-error {
+    margin: -4px 0 14px;
+    color: #e08a8a;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.result-fail .result-mark {
+    background: #a83d3d;
+    color: var(--white);
+}
+
+/* ============================ Monitor picker ============================= */
+
+.monitor-select-page {
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    padding: 24px;
+}
+
+.monitor-select-card {
+    width: min(560px, 100%);
+    padding: 34px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+    text-align: center;
+}
+
+.monitor-select-card p {
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.monitor-select-card code {
+    padding: 2px 6px;
+    border-radius: 5px;
+    background: var(--panel-light);
+}
+
+.monitor-table-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.monitor-table-btn {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel-light);
+    color: var(--white);
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.monitor-table-btn:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.monitor-table-btn span {
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+}

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Официант — монитор</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="staff.css">
+</head>
+<body class="staff-body">
+
+    <section class="staff-login-page" id="staff-login-screen">
+        <div class="monitor-select-card staff-login-card">
+            <p class="eyebrow">Официант</p>
+            <h1>Вход для официанта</h1>
+            <form id="staff-login-form" class="age-form">
+                <label>Логин
+                    <input type="text" id="staff-login-input" autocomplete="username" required>
+                </label>
+                <label>Пароль
+                    <input type="password" id="staff-password-input" autocomplete="current-password" required>
+                </label>
+                <p class="age-form-error" id="staff-login-error" hidden></p>
+                <button class="order-btn" type="submit">Войти</button>
+            </form>
+            <small>Демо-доступ: aigerim / waiter123</small>
+        </div>
+    </section>
+
+    <div class="staff-app" id="staff-app-screen" hidden>
+        <header class="staff-header">
+            <div>
+                <p class="eyebrow">Официант</p>
+                <h1>Заказы к выдаче</h1>
+            </div>
+            <div class="staff-header-actions">
+                <span id="staff-name" class="staff-name"></span>
+                <button class="secondary-btn" id="staff-logout-btn" type="button">Выйти</button>
+            </div>
+        </header>
+
+        <section id="waiter-orders" class="staff-orders" aria-live="polite"></section>
+        <p class="staff-empty" id="waiter-empty" hidden>Нет заказов, готовых к выдаче.</p>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="api.js"></script>
+    <script src="staff-auth.js"></script>
+    <script src="waiter.js"></script>
+</body>
+</html>

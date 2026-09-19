@@ -1,0 +1,413 @@
+// ============================================================================
+// Restaurant table-monitor ordering system — Prisma schema
+//
+// This mirrors the ERD from "Database - Лист1.pdf" field-for-field, using
+// VARCHAR(n)-with-allowed-values (documented in comments) exactly like the
+// source spreadsheet did, rather than native Postgres enums — so the columns
+// line up 1:1 with what's in the spec.
+//
+// A few tables/columns were ADDED beyond the given ERD because the written
+// business flow (Техническое задание) needs them and the ERD didn't have a
+// place for them yet. Each is marked "// ADDED:" with the reason, following
+// the same "Добавил / Почему" reasoning style used in the ТЗ itself:
+//
+//   1) cart_items_options  — the ТЗ says a client picks dish options when
+//      adding to the cart, but the ERD only had order_item_options (options
+//      are recorded once an order exists). Without this table a chosen
+//      option can't survive from "add to cart" to "checkout".
+//   2) inventory_reservations.order_item_id — the ERD only ties a
+//      reservation to order_id. When one order has two items that need the
+//      same ingredient, there is no way to tell which item's reservation to
+//      release/consume when THAT item (not the whole order) starts cooking.
+//      order_id is kept too, so existing per-order queries still work.
+//   3) cart_items.notes / order_items.notes — the ТЗ says the chef should be
+//      able to see "особенности приготовления" (cooking notes) per dish, but
+//      no field carries that text. Nullable, so it costs nothing if unused.
+//   4) The ERD lists both a singular "cart" table and a plural "carts" table
+//      with identical columns (a leftover duplicate — cart_items itself
+//      points at "Carts"). Only "carts" is modeled here.
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Staff accounts
+// ---------------------------------------------------------------------------
+model User {
+  userId       BigInt   @id @default(autoincrement()) @map("user_id")
+  name         String   @db.VarChar(100)
+  login        String   @unique @db.VarChar(100)
+  passwordHash String   @map("password_hash") @db.Text
+  /// Allowed values: ADMIN, WAITER, CHEF
+  role         String   @db.VarChar(30)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  ordersAsWaiter        Order[]            @relation("OrderWaiter")
+  paymentsReceived      Payment[]          @relation("PaymentPaidBy")
+  ageVerificationsDone  AgeVerification[]  @relation("AgeVerificationVerifiedBy")
+
+  @@map("users")
+}
+
+// ---------------------------------------------------------------------------
+// Physical tables, one monitor bolted to each
+// ---------------------------------------------------------------------------
+model RestaurantTable {
+  tableId       BigInt   @id @default(autoincrement()) @map("table_id")
+  tableNumber   Int      @unique @map("table_number")
+  monitorNumber Int      @unique @map("monitor_number")
+  /// Allowed values: FREE, OCCUPIED
+  status        String   @default("FREE") @db.VarChar(20)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  sessions RestaurantSession[]
+  orders   Order[]
+
+  @@map("tables")
+}
+
+// ---------------------------------------------------------------------------
+// One visit/seating at a table
+// ---------------------------------------------------------------------------
+model RestaurantSession {
+  sessionId   BigInt    @id @default(autoincrement()) @map("session_id")
+  tableId     BigInt    @map("table_id")
+  table       RestaurantTable @relation(fields: [tableId], references: [tableId])
+  /// Allowed values: ACTIVE, COMPLETED, CANCELLED
+  status      String    @default("ACTIVE") @db.VarChar(20)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  completedAt DateTime? @map("completed_at")
+
+  cart              Cart?
+  orders            Order[]
+  ageVerifications  AgeVerification[]
+
+  @@map("restaurant_sessions")
+}
+
+// ---------------------------------------------------------------------------
+// Menu catalog
+// ---------------------------------------------------------------------------
+model Category {
+  categoryId  BigInt   @id @default(autoincrement()) @map("category_id")
+  name        String   @unique @db.VarChar(100)
+  description String?  @db.Text
+  imageUrl    String?  @map("image_url") @db.Text
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+
+  dishes Dish[]
+
+  @@map("categories")
+}
+
+model Dish {
+  dishId      BigInt   @id @default(autoincrement()) @map("dish_id")
+  categoryId  BigInt   @map("category_id")
+  category    Category @relation(fields: [categoryId], references: [categoryId])
+  name        String   @db.VarChar(150)
+  description String?  @db.Text
+  price       Decimal  @db.Decimal(12, 2)
+  imageUrl    String?  @map("image_url") @db.Text
+  is21Plus    Boolean  @default(false) @map("is_21_plus")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  recipes          Recipe[]
+  cartItems        CartItem[]
+  orderItems       OrderItem[]
+  availableOptions DishAvailableOption[]
+  allergens        DishAllergen[]
+
+  @@map("dishes")
+}
+
+model Ingredient {
+  ingredientId BigInt   @id @default(autoincrement()) @map("ingredient_id")
+  name         String   @unique @db.VarChar(150)
+  /// Allowed values: g, kg, ml, l, pcs
+  unit         String   @db.VarChar(20)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  recipes             Recipe[]
+  inventory            Inventory?
+  inventoryReservations InventoryReservation[]
+  dishOptionIngredients DishOptionIngredient[]
+
+  @@map("ingredients")
+}
+
+model Recipe {
+  recipeId     BigInt     @id @default(autoincrement()) @map("recipe_id")
+  dishId       BigInt     @map("dish_id")
+  dish         Dish       @relation(fields: [dishId], references: [dishId])
+  ingredientId BigInt     @map("ingredient_id")
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [ingredientId])
+  quantity     Decimal    @db.Decimal(12, 3)
+
+  @@index([dishId])
+  @@map("recipes")
+}
+
+// ---------------------------------------------------------------------------
+// Stock
+// ---------------------------------------------------------------------------
+model Inventory {
+  inventoryId      BigInt     @id @default(autoincrement()) @map("inventory_id")
+  ingredientId     BigInt     @unique @map("ingredient_id")
+  ingredient       Ingredient @relation(fields: [ingredientId], references: [ingredientId])
+  stockQuantity    Decimal    @map("stock_quantity") @db.Decimal(14, 3)
+  reservedQuantity Decimal    @default(0) @map("reserved_quantity") @db.Decimal(14, 3)
+  updatedAt        DateTime   @default(now()) @updatedAt @map("updated_at")
+
+  @@map("inventory")
+}
+
+model InventoryReservation {
+  reservationId BigInt     @id @default(autoincrement()) @map("reservation_id")
+  orderId       BigInt     @map("order_id")
+  order         Order      @relation(fields: [orderId], references: [orderId])
+  // ADDED: see header note (1-to-many ambiguity fix for per-item consume/release)
+  orderItemId   BigInt?    @map("order_item_id")
+  orderItem     OrderItem? @relation(fields: [orderItemId], references: [orderItemId])
+  ingredientId  BigInt     @map("ingredient_id")
+  ingredient    Ingredient @relation(fields: [ingredientId], references: [ingredientId])
+  quantity      Decimal    @db.Decimal(14, 3)
+  /// Allowed values: RESERVED, CONSUMED, RELEASED
+  status        String     @db.VarChar(20)
+  createdAt     DateTime   @default(now()) @map("created_at")
+  releasedAt    DateTime?  @map("released_at")
+  consumedAt    DateTime?  @map("consumed_at")
+
+  @@index([orderId])
+  @@index([orderItemId])
+  @@map("inventory_reservations")
+}
+
+// ---------------------------------------------------------------------------
+// Cart (pre-order, per session)
+// ---------------------------------------------------------------------------
+model Cart {
+  cartId    BigInt   @id @default(autoincrement()) @map("cart_id")
+  sessionId BigInt   @unique @map("session_id")
+  session   RestaurantSession @relation(fields: [sessionId], references: [sessionId])
+  /// Allowed values: ACTIVE, CONVERTED
+  status    String   @default("ACTIVE") @db.VarChar(20)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  items CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  cartItemId  BigInt   @id @default(autoincrement()) @map("cart_item_id")
+  cartId      BigInt   @map("cart_id")
+  cart        Cart     @relation(fields: [cartId], references: [cartId])
+  dishId      BigInt   @map("dish_id")
+  dish        Dish     @relation(fields: [dishId], references: [dishId])
+  quantity    Int
+  priceAtAdd  Decimal  @map("price_at_add") @db.Decimal(12, 2)
+  // ADDED: see header note (chef-visible free-text request, e.g. "no onions")
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  options CartItemOption[]
+
+  @@index([cartId])
+  @@map("cart_items")
+}
+
+// ADDED (table): see header note (1) — lets chosen options survive into the cart
+model CartItemOption {
+  cartItemOptionId BigInt     @id @default(autoincrement()) @map("cart_item_option_id")
+  cartItemId       BigInt     @map("cart_item_id")
+  cartItem         CartItem   @relation(fields: [cartItemId], references: [cartItemId])
+  optionId         BigInt     @map("option_id")
+  option           DishOption @relation(fields: [optionId], references: [optionId])
+  quantity         Int        @default(1)
+  priceAtAdd       Decimal    @map("price_at_add") @db.Decimal(12, 2)
+
+  @@index([cartItemId])
+  @@map("cart_item_options")
+}
+
+// ---------------------------------------------------------------------------
+// Dish options (extras / add-ons)
+// ---------------------------------------------------------------------------
+model DishOption {
+  optionId    BigInt   @id @default(autoincrement()) @map("option_id")
+  name        String   @db.VarChar(100)
+  description String?  @db.Text
+  price       Decimal  @db.Decimal(12, 2)
+  isActive    Boolean  @default(true) @map("is_active")
+
+  ingredients     DishOptionIngredient[]
+  availableOnDishes DishAvailableOption[]
+  cartItemOptions CartItemOption[]
+  orderItemOptions OrderItemOption[]
+
+  @@map("dish_options")
+}
+
+model DishOptionIngredient {
+  optionId     BigInt     @map("option_id")
+  option       DishOption @relation(fields: [optionId], references: [optionId])
+  ingredientId BigInt     @map("ingredient_id")
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [ingredientId])
+  quantity     Decimal    @db.Decimal(12, 3)
+
+  @@id([optionId, ingredientId])
+  @@map("dish_option_ingredients")
+}
+
+model DishAvailableOption {
+  dishId   BigInt     @map("dish_id")
+  dish     Dish       @relation(fields: [dishId], references: [dishId])
+  optionId BigInt     @map("option_id")
+  option   DishOption @relation(fields: [optionId], references: [optionId])
+
+  @@id([dishId, optionId])
+  @@map("dish_available_options")
+}
+
+// ---------------------------------------------------------------------------
+// Orders
+// ---------------------------------------------------------------------------
+model Order {
+  orderId       BigInt    @id @default(autoincrement()) @map("order_id")
+  sessionId     BigInt    @map("session_id")
+  session       RestaurantSession @relation(fields: [sessionId], references: [sessionId])
+  tableId       BigInt    @map("table_id")
+  table         RestaurantTable @relation(fields: [tableId], references: [tableId])
+  waiterId      BigInt?   @map("waiter_id")
+  waiter        User?     @relation("OrderWaiter", fields: [waiterId], references: [userId])
+  totalPrice    Decimal   @map("total_price") @db.Decimal(12, 2)
+  /// Allowed values: CREATED, SENT_TO_KITCHEN, READY_FOR_DELIVERY, OUT_FOR_DELIVERY, DELIVERED
+  orderStatus   String    @map("order_status") @db.VarChar(30)
+  /// Allowed values: WAITING_FOR_PAYMENT, WAITING_FOR_CASH, PAID
+  paymentStatus String    @map("payment_status") @db.VarChar(30)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at")
+  deliveredAt   DateTime? @map("delivered_at")
+
+  items                OrderItem[]
+  payments             Payment[]
+  inventoryReservations InventoryReservation[]
+  ageVerifications     AgeVerification[]
+
+  @@index([sessionId])
+  @@index([tableId])
+  @@map("orders")
+}
+
+model OrderItem {
+  orderItemId BigInt    @id @default(autoincrement()) @map("order_item_id")
+  orderId     BigInt    @map("order_id")
+  order       Order     @relation(fields: [orderId], references: [orderId])
+  dishId      BigInt    @map("dish_id")
+  dish        Dish      @relation(fields: [dishId], references: [dishId])
+  quantity    Int
+  price       Decimal   @db.Decimal(12, 2)
+  /// Allowed values: WAITING, PREPARING, READY, HANDED_TO_WAITER, DELIVERED
+  status      String    @db.VarChar(30)
+  // ADDED: see header note (3)
+  notes       String?   @db.Text
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
+  deliveredAt DateTime? @map("delivered_at")
+
+  options               OrderItemOption[]
+  inventoryReservations InventoryReservation[]
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+model OrderItemOption {
+  orderItemOptionId BigInt     @id @default(autoincrement()) @map("order_item_option_id")
+  orderItemId       BigInt     @map("order_item_id")
+  orderItem         OrderItem  @relation(fields: [orderItemId], references: [orderItemId])
+  optionId          BigInt     @map("option_id")
+  option            DishOption @relation(fields: [optionId], references: [optionId])
+  quantity          Int
+  price             Decimal    @db.Decimal(12, 2)
+
+  @@index([orderItemId])
+  @@map("order_item_options")
+}
+
+// ---------------------------------------------------------------------------
+// Payments
+// ---------------------------------------------------------------------------
+model Payment {
+  paymentId BigInt    @id @default(autoincrement()) @map("payment_id")
+  orderId   BigInt    @map("order_id")
+  order     Order     @relation(fields: [orderId], references: [orderId])
+  /// Allowed values: KASPI_QR, CASH
+  method    String    @db.VarChar(20)
+  /// Allowed values: WAITING_FOR_CASH, PAID
+  status    String    @db.VarChar(30)
+  amount    Decimal   @db.Decimal(12, 2)
+  createdAt DateTime  @default(now()) @map("created_at")
+  paidAt    DateTime? @map("paid_at")
+  paidBy    BigInt?   @map("paid_by")
+  paidByUser User?    @relation("PaymentPaidBy", fields: [paidBy], references: [userId])
+
+  @@index([orderId])
+  @@map("payments")
+}
+
+// ---------------------------------------------------------------------------
+// Age verification (21+)
+// ---------------------------------------------------------------------------
+model AgeVerification {
+  verificationId BigInt    @id @default(autoincrement()) @map("verification_id")
+  sessionId      BigInt    @map("session_id")
+  session        RestaurantSession @relation(fields: [sessionId], references: [sessionId])
+  orderId        BigInt?   @map("order_id")
+  order          Order?    @relation(fields: [orderId], references: [orderId])
+  verified       Boolean   @map("verified")
+  verifiedBy     BigInt    @map("verified_by")
+  verifiedByUser User      @relation("AgeVerificationVerifiedBy", fields: [verifiedBy], references: [userId])
+  verifiedAt     DateTime? @map("verified_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@index([sessionId])
+  @@map("age_verifications")
+}
+
+// ---------------------------------------------------------------------------
+// Allergens
+// ---------------------------------------------------------------------------
+model Allergen {
+  allergenId  BigInt  @id @default(autoincrement()) @map("allergen_id")
+  name        String  @unique @db.VarChar(100)
+  description String? @db.Text
+
+  dishes DishAllergen[]
+
+  @@map("allergens")
+}
+
+model DishAllergen {
+  dishId     BigInt   @map("dish_id")
+  dish       Dish     @relation(fields: [dishId], references: [dishId])
+  allergenId BigInt   @map("allergen_id")
+  allergen   Allergen @relation(fields: [allergenId], references: [allergenId])
+
+  @@id([dishId, allergenId])
+  @@map("dish_allergens")
+}

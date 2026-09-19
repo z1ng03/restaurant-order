@@ -1,0 +1,216 @@
+/* Kitchen (kitchen.html) and waiter (waiter.html) monitors. Shares the
+   palette/variables from style.css (loaded first on both pages). */
+
+.staff-body {
+    min-height: 100vh;
+    background: var(--bg);
+}
+
+.staff-login-page {
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    padding: 24px;
+}
+
+.staff-login-card {
+    text-align: left;
+}
+
+.staff-login-card h1 {
+    margin: 0 0 20px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 30px;
+    text-align: center;
+}
+
+.staff-login-card .eyebrow {
+    text-align: center;
+}
+
+.staff-login-card .order-btn {
+    width: 100%;
+}
+
+.staff-login-card small {
+    display: block;
+    margin-top: 16px;
+    color: var(--muted);
+    text-align: center;
+}
+
+.staff-app {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: clamp(16px, 2.5vw, 36px);
+}
+
+.staff-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.staff-header h1 {
+    margin: 2px 0 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(26px, 3vw, 38px);
+    font-weight: 400;
+}
+
+.staff-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.staff-name {
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.staff-empty {
+    padding: 40px;
+    color: var(--muted);
+    text-align: center;
+}
+
+.staff-orders {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.staff-order-card {
+    padding: 18px 20px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+}
+
+.staff-order-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.staff-order-header strong {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 19px;
+}
+
+.staff-order-meta {
+    display: block;
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.staff-order-status {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.staff-status-badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    background: var(--panel-light);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.staff-badge-paid {
+    background: rgba(122, 184, 122, 0.22);
+    color: #9fd89f;
+}
+
+.staff-badge-waiting {
+    background: rgba(240, 178, 74, 0.22);
+    color: var(--accent);
+}
+
+.staff-order-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.staff-item {
+    padding: 10px 12px;
+    border-left: 3px solid var(--line);
+    border-radius: 0 8px 8px 0;
+    background: var(--panel-light);
+}
+
+.staff-item-waiting {
+    border-left-color: #9a9a9a;
+}
+
+.staff-item-preparing {
+    border-left-color: var(--accent);
+}
+
+.staff-item-ready {
+    border-left-color: #7ab87a;
+}
+
+.staff-item-handed_to_waiter {
+    border-left-color: #5c8fd6;
+    opacity: 0.75;
+}
+
+.staff-item-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.staff-item-sub {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.staff-ingredients {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.staff-ingredients summary {
+    width: max-content;
+    color: var(--accent);
+    cursor: pointer;
+}
+
+.staff-ingredients p {
+    margin: 6px 0 0;
+    line-height: 1.4;
+}
+
+.staff-action-btn {
+    width: 100%;
+    margin-top: 10px;
+    min-height: 42px;
+}
+
+.staff-order-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.staff-action-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    transform: none !important;
+}
