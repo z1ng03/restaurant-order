@@ -21,6 +21,13 @@ export const ORDER_STATUSES = [
   "READY_FOR_DELIVERY",
   "OUT_FOR_DELIVERY",
   "DELIVERED",
+  // ADDED (admin panel): the ТЗ's pipeline never describes cancelling a
+  // placed order, so this wasn't in the original enum — but "admin control
+  // over orders" needs a way to void one (customer walked out, mistake,
+  // etc.), and restaurant_sessions already has its own CANCELLED for the
+  // same reason. Purely additive: nothing existing reads/writes this value
+  // except the new admin cancel endpoint.
+  "CANCELLED",
 ] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
@@ -74,10 +81,16 @@ const ORDER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   READY_FOR_DELIVERY: ["OUT_FOR_DELIVERY"],
   OUT_FOR_DELIVERY: ["DELIVERED"],
   DELIVERED: [],
+  CANCELLED: [],
 };
 
 export function canTransitionOrder(from: OrderStatus, to: OrderStatus): boolean {
   return ORDER_TRANSITIONS[from].includes(to);
+}
+
+/** Admin-only escape hatch — any order not yet DELIVERED or already CANCELLED can be voided. */
+export function canCancelOrder(status: OrderStatus): boolean {
+  return status !== "DELIVERED" && status !== "CANCELLED";
 }
 
 export function isAgeRestrictedRequired(is21Plus: boolean): boolean {

@@ -1,6 +1,7 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { CheckoutValidationError, NotFoundError, type CheckoutIssue } from "../../lib/errors";
+import type { Tx } from "../../lib/prismaTx";
 import { assertSessionActive } from "../sessions/sessions.service";
 import { sessionHasVerifiedAge, linkAgeVerificationToOrder } from "../ageVerification/ageVerification.service";
 import {
@@ -11,8 +12,6 @@ import {
   type IngredientNeed,
 } from "../menu/inventory.service";
 import type { PaymentMethod } from "../../types/status";
-
-type Tx = Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">;
 
 const cartWithFreshDataInclude = {
   items: {

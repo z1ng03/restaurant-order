@@ -1,5 +1,6 @@
 import { prisma } from "../../db/prisma";
 import { ConflictError, NotFoundError } from "../../lib/errors";
+import { closeSessionIfNoActiveOrders } from "../sessions/sessions.service";
 
 const waiterOrderInclude = {
   table: true,
@@ -92,17 +93,7 @@ export async function markDelivered(orderId: bigint) {
     const now = new Date();
     await tx.order.update({ where: { orderId }, data: { orderStatus: "DELIVERED", deliveredAt: now } });
     await tx.orderItem.updateMany({ where: { orderId }, data: { status: "DELIVERED", deliveredAt: now } });
-
-    const otherActiveOrders = await tx.order.count({
-      where: { sessionId: order.sessionId, orderId: { not: orderId }, orderStatus: { not: "DELIVERED" } },
-    });
-    if (otherActiveOrders === 0) {
-      await tx.restaurantSession.update({
-        where: { sessionId: order.sessionId },
-        data: { status: "COMPLETED", completedAt: now },
-      });
-      await tx.restaurantTable.update({ where: { tableId: order.tableId }, data: { status: "FREE" } });
-    }
+    await closeSessionIfNoActiveOrders(tx, order.sessionId, order.tableId, orderId);
   });
 
   return getOrderOrThrow(orderId);

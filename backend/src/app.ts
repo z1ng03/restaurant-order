@@ -13,6 +13,7 @@ import { ageVerificationRouter } from "./modules/ageVerification/ageVerification
 import { kitchenRouter } from "./modules/kitchen/kitchen.routes";
 import { waiterRouter } from "./modules/waiter/waiter.routes";
 import { authRouter } from "./modules/auth/auth.routes";
+import { adminRouter } from "./modules/admin/admin.routes";
 
 export const app = express();
 
@@ -30,6 +31,7 @@ app.use("/api/age-verification", ageVerificationRouter);
 app.use("/api/kitchen", kitchenRouter);
 app.use("/api/waiter", waiterRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/admin", adminRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

@@ -1,0 +1,400 @@
+/* Admin panel (admin.html). Loaded after style.css and staff.css, shares
+   their palette/variables and staff-login-screen styling. */
+
+.admin-app {
+    max-width: 1280px;
+}
+
+.admin-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+}
+
+.admin-tab {
+    padding: 9px 16px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.15s ease;
+}
+
+.admin-tab:hover {
+    color: var(--white);
+}
+
+.admin-tab.active {
+    background: var(--accent);
+    color: var(--dark);
+}
+
+.admin-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.admin-panel-header-spaced {
+    margin-top: 36px;
+}
+
+.admin-panel-header h2 {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 22px;
+    font-weight: 400;
+}
+
+.admin-panel-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-small-btn {
+    width: auto;
+    padding: 9px 16px;
+    min-height: unset;
+}
+
+.admin-select {
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel-light);
+    color: var(--white);
+    font-size: 13px;
+}
+
+/* Dashboard */
+.admin-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.admin-card {
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+}
+
+.admin-card h3 {
+    margin: 0 0 12px;
+    font-size: 15px;
+    color: var(--muted);
+}
+
+.admin-card-value {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 30px;
+}
+
+.admin-card-label {
+    display: block;
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.admin-low-stock-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+}
+
+.admin-low-stock-row:last-child {
+    border-bottom: none;
+}
+
+/* Data tables */
+.admin-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+}
+
+.admin-table th {
+    padding: 12px 14px;
+    background: var(--panel-light);
+    color: var(--muted);
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.admin-table td {
+    padding: 11px 14px;
+    border-top: 1px solid var(--line);
+    vertical-align: middle;
+}
+
+.admin-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.admin-row-actions {
+    display: flex;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.admin-link-btn {
+    padding: 6px 11px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: transparent;
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.admin-link-btn:hover {
+    border-color: var(--accent);
+}
+
+.admin-link-btn.admin-danger {
+    color: #e08a8a;
+}
+
+.admin-link-btn.admin-danger:hover {
+    border-color: #a83d3d;
+}
+
+.admin-pill {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.admin-pill-on {
+    background: rgba(122, 184, 122, 0.22);
+    color: #9fd89f;
+}
+
+.admin-pill-off {
+    background: rgba(168, 61, 61, 0.22);
+    color: #e08a8a;
+}
+
+.admin-muted-cell {
+    color: var(--muted);
+}
+
+.admin-empty-row td {
+    padding: 24px;
+    text-align: center;
+    color: var(--muted);
+}
+
+.admin-stock-input {
+    width: 90px;
+    padding: 6px 8px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--panel-light);
+    color: var(--white);
+    font-size: 13px;
+}
+
+/* Form modal */
+.admin-form-modal-card {
+    width: min(640px, 92vw);
+    max-height: 86vh;
+    overflow-y: auto;
+    text-align: left;
+}
+
+.admin-form-modal-card h2 {
+    margin: 0 0 18px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 24px;
+    font-weight: 400;
+}
+
+.admin-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.admin-form label {
+    display: block;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.admin-form input[type="text"],
+.admin-form input[type="number"],
+.admin-form input[type="password"],
+.admin-form select,
+.admin-form textarea {
+    width: 100%;
+    margin-top: 6px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel-light);
+    color: var(--white);
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.admin-form textarea {
+    min-height: 70px;
+    resize: vertical;
+}
+
+.admin-form input:focus,
+.admin-form select:focus,
+.admin-form textarea:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.admin-form-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+}
+
+.admin-form-checkbox input {
+    width: 17px;
+    height: 17px;
+    accent-color: var(--accent);
+}
+
+.admin-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.admin-repeatable {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.admin-repeatable-row {
+    display: grid;
+    grid-template-columns: 1fr 110px 34px;
+    gap: 8px;
+    align-items: center;
+}
+
+.admin-repeatable-remove {
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: transparent;
+    color: #e08a8a;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.admin-add-row-btn {
+    align-self: flex-start;
+    padding: 7px 12px;
+    border: 1px dashed var(--line);
+    border-radius: 7px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.admin-add-row-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.admin-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 8px;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    max-height: 160px;
+    overflow-y: auto;
+}
+
+.admin-checkbox-grid label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--white);
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.admin-checkbox-grid input {
+    width: 15px;
+    height: 15px;
+    accent-color: var(--accent);
+}
+
+.admin-form-error {
+    margin: 0;
+    color: #e08a8a;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.admin-form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.admin-form-actions .order-btn {
+    flex: 1;
+}
+
+.admin-order-detail {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+    .admin-form-row {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="staff.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body class="staff-body">
+
+    <section class="staff-login-page" id="staff-login-screen">
+        <div class="monitor-select-card staff-login-card">
+            <p class="eyebrow">Администратор</p>
+            <h1>Вход в админ-панель</h1>
+            <form id="staff-login-form" class="age-form">
+                <label>Логин
+                    <input type="text" id="staff-login-input" autocomplete="username" required>
+                </label>
+                <label>Пароль
+                    <input type="password" id="staff-password-input" autocomplete="current-password" required>
+                </label>
+                <p class="age-form-error" id="staff-login-error" hidden></p>
+                <button class="order-btn" type="submit">Войти</button>
+            </form>
+            <small>Демо-доступ: admin / admin123</small>
+        </div>
+    </section>
+
+    <div class="staff-app admin-app" id="staff-app-screen" hidden>
+        <header class="staff-header">
+            <div>
+                <p class="eyebrow">Администратор</p>
+                <h1>Управление рестораном</h1>
+            </div>
+            <div class="staff-header-actions">
+                <span id="staff-name" class="staff-name"></span>
+                <button class="secondary-btn" id="staff-logout-btn" type="button">Выйти</button>
+            </div>
+        </header>
+
+        <nav class="admin-tabs" id="admin-tabs">
+            <button class="admin-tab active" data-tab="dashboard" type="button">Обзор</button>
+            <button class="admin-tab" data-tab="tables" type="button">Столики</button>
+            <button class="admin-tab" data-tab="orders" type="button">Заказы</button>
+            <button class="admin-tab" data-tab="menu" type="button">Меню</button>
+            <button class="admin-tab" data-tab="inventory" type="button">Склад</button>
+            <button class="admin-tab" data-tab="options" type="button">Опции и аллергены</button>
+            <button class="admin-tab" data-tab="staff" type="button">Сотрудники</button>
+        </nav>
+
+        <!-- Обзор -->
+        <section class="admin-panel" id="panel-dashboard" data-panel="dashboard">
+            <div class="admin-cards" id="dashboard-cards"></div>
+            <div class="admin-card">
+                <h3>Наименьшие остатки</h3>
+                <div id="dashboard-low-stock"></div>
+            </div>
+        </section>
+
+        <!-- Столики -->
+        <section class="admin-panel" id="panel-tables" data-panel="tables" hidden>
+            <div class="admin-panel-header">
+                <h2>Столики</h2>
+                <button class="order-btn admin-small-btn" id="table-add-btn" type="button">+ Добавить столик</button>
+            </div>
+            <div class="admin-table-wrap">
+                <table class="admin-table" id="tables-table">
+                    <thead>
+                        <tr><th>№ столика</th><th>№ монитора</th><th>Статус</th><th>Сессия</th><th></th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Заказы -->
+        <section class="admin-panel" id="panel-orders" data-panel="orders" hidden>
+            <div class="admin-panel-header">
+                <h2>Заказы</h2>
+                <select id="orders-status-filter" class="admin-select">
+                    <option value="">Все статусы</option>
+                    <option value="CREATED">CREATED</option>
+                    <option value="SENT_TO_KITCHEN">SENT_TO_KITCHEN</option>
+                    <option value="READY_FOR_DELIVERY">READY_FOR_DELIVERY</option>
+                    <option value="OUT_FOR_DELIVERY">OUT_FOR_DELIVERY</option>
+                    <option value="DELIVERED">DELIVERED</option>
+                    <option value="CANCELLED">CANCELLED</option>
+                </select>
+            </div>
+            <div class="admin-table-wrap">
+                <table class="admin-table" id="orders-table">
+                    <thead>
+                        <tr><th>№</th><th>Столик</th><th>Блюда</th><th>Статус</th><th>Оплата</th><th>Сумма</th><th>Создан</th><th></th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Меню -->
+        <section class="admin-panel" id="panel-menu" data-panel="menu" hidden>
+            <div class="admin-panel-header">
+                <h2>Категории</h2>
+                <button class="order-btn admin-small-btn" id="category-add-btn" type="button">+ Категория</button>
+            </div>
+            <div class="admin-table-wrap">
+                <table class="admin-table" id="categories-table">
+                    <thead><tr><th>Название</th><th>Порядок</th><th>Активна</th><th></th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="admin-panel-header admin-panel-header-spaced">
+                <h2>Блюда</h2>
+                <div class="admin-panel-header-actions">
+                    <select id="dishes-category-filter" class="admin-select"><option value="">Все категории</option></select>
+                    <button class="order-btn admin-small-btn" id="dish-add-btn" type="button">+ Блюдо</button>
+                </div>
+            </div>
+            <div class="admin-table-wrap">
+                <table class="admin-table" id="dishes-table">
+                    <thead><tr><th>Название</th><th>Категория</th><th>Цена</th><th>21+</th><th>Активно</th><th></th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Склад -->
+        <section class="admin-panel" id="panel-inventory" data-panel="inventory" hidden>
+            <div class="admin-panel-header">
+                <h2>Ингредиенты и склад</h2>
+                <button class="order-btn admin-small-btn" id="ingredient-add-btn" type="button">+ Ингредиент</button>
+            </div>
+            <div class="admin-table-wrap">
+                <table class="admin-table" id="ingredients-table">
+                    <thead><tr><th>Название</th><th>Ед.</th><th>Остаток</th><th>Резерв</th><th>Свободно</th><th>Активен</th><th></th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Опции и аллергены -->
+        <section class="admin-panel" id="panel-options" data-panel="options" hidden>
+            <div class="admin-panel-header">
+                <h2>Дополнительные опции</h2>
+                <button class="order-btn admin-small-btn" id="option-add-btn" type="button">+ Опция</button>
+            </div>
+            <div class="admin-table-wrap">
+                <table class="admin-table" id="options-table">
+                    <thead><tr><th>Название</th><th>Цена</th><th>Состав</th><th>Активна</th><th></th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="admin-panel-header admin-panel-header-spaced">
+                <h2>Аллергены</h2>
+                <button class="order-btn admin-small-btn" id="allergen-add-btn" type="button">+ Аллерген</button>
+            </div>
+            <div class="admin-table-wrap">
+                <table class="admin-table" id="allergens-table">
+                    <thead><tr><th>Название</th><th>Описание</th><th></th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Сотрудники -->
+        <section class="admin-panel" id="panel-staff" data-panel="staff" hidden>
+            <div class="admin-panel-header">
+                <h2>Сотрудники</h2>
+                <button class="order-btn admin-small-btn" id="user-add-btn" type="button">+ Сотрудник</button>
+            </div>
+            <div class="admin-table-wrap">
+                <table class="admin-table" id="users-table">
+                    <thead><tr><th>Имя</th><th>Логин</th><th>Роль</th><th>Активен</th><th></th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- Универсальное модальное окно для форм создания/редактирования -->
+    <div class="checkout-modal" id="form-modal" hidden>
+        <div class="modal-card admin-form-modal-card" role="dialog" aria-modal="true">
+            <button class="modal-close" id="form-modal-close" type="button" aria-label="Закрыть">×</button>
+            <h2 id="form-modal-title">Форма</h2>
+            <form id="form-modal-form" class="admin-form"></form>
+        </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="api.js"></script>
+    <script src="staff-auth.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

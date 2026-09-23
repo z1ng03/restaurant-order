@@ -1,5 +1,6 @@
 import { prisma } from "../../db/prisma";
 import { ConflictError, NotFoundError, ValidationError } from "../../lib/errors";
+import type { Tx } from "../../lib/prismaTx";
 
 /**
  * ТЗ §1: "Монитор №7 -> Столик №7. Это проверка на то что столик свободен /
@@ -75,4 +76,23 @@ export async function getSessionOrders(sessionId: bigint) {
     },
     orderBy: { createdAt: "desc" },
   });
+}
+
+/**
+ * Shared by waiter delivery (ТЗ §14) and admin order cancellation: once an
+ * order stops being "active" (delivered, or now cancelled — see
+ * types/status.ts), check whether it was the session's last one. If so the
+ * visit is over — complete the session and free the table, "иначе система
+ * будет считать столик занятым бесконечно". `excludeOrderId` is the order
+ * that just changed state, so it's not counted against itself.
+ */
+export async function closeSessionIfNoActiveOrders(tx: Tx, sessionId: bigint, tableId: bigint, excludeOrderId: bigint) {
+  const otherActiveOrders = await tx.order.count({
+    where: { sessionId, orderId: { not: excludeOrderId }, orderStatus: { notIn: ["DELIVERED", "CANCELLED"] } },
+  });
+  if (otherActiveOrders === 0) {
+    const now = new Date();
+    await tx.restaurantSession.update({ where: { sessionId }, data: { status: "COMPLETED", completedAt: now } });
+    await tx.restaurantTable.update({ where: { tableId }, data: { status: "FREE" } });
+  }
 }

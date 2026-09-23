@@ -7,8 +7,8 @@ Built against `Техническое_задание.docx` and `Database - Ли�
 This pass adds a complete **TypeScript backend** (there wasn't one — `backend/index.ts`
 was `console.log("qwe")` with zero dependencies) and wires the existing
 frontend prototype to it instead of a hardcoded menu + `localStorage` cart,
-plus two new screens (kitchen and waiter monitors) that the ТЗ describes but
-that didn't exist yet in the repo.
+plus three new screens (kitchen monitor, waiter monitor, and an admin
+panel) that the ТЗ implies but that didn't exist yet in the repo.
 
 ## Stack
 
@@ -32,11 +32,12 @@ backend/
     app.ts, server.ts
 frontend/
   index.html, cart.html      # existing client screens, now API-backed
-  kitchen.html, kitchen.js   # NEW — chef monitor
-  waiter.html, waiter.js     # NEW — waiter monitor
-  monitor-select.html        # NEW — local-dev table picker (see below)
+  kitchen.html, kitchen.js   # chef monitor
+  waiter.html, waiter.js     # waiter monitor
+  admin.html, admin.js, admin.css  # NEW — admin panel (see below)
+  monitor-select.html        # local-dev table picker (see below)
   api.js, session.js, staff-auth.js, serial-payment.js  # shared client-side helpers
-  style.css, staff.css       # existing styles + additions for the new screens
+  style.css, staff.css       # existing styles + additions for the staff/admin screens
   arduino/rc522_payment.ino  # untouched — see "Payment hardware" below
 ```
 
@@ -88,7 +89,7 @@ picker.
 
 Kitchen monitor: `http://localhost:8000/kitchen.html` (demo login `marat` / `chef123`)
 Waiter monitor: `http://localhost:8000/waiter.html` (demo login `aigerim` / `waiter123`)
-Admin account: `admin` / `admin123` (no dedicated screen — see "Not built" below)
+Admin panel: `http://localhost:8000/admin.html` (demo login `admin` / `admin123`)
 
 If the backend isn't running on `localhost:4000`, set
 `window.RESTAURANT_API_BASE` before `api.js` loads on any page.
@@ -120,6 +121,14 @@ marked `// ADDED:` in the schema with its reasoning, in the same
 4. The ERD lists both a singular `cart` and a plural `carts` table with
    identical columns — a leftover duplicate (`cart_items` itself points at
    `Carts`). Only `carts` is modeled.
+5. **`orders.order_status = 'CANCELLED'`** — the ТЗ's pipeline never
+   describes cancelling a placed order, so this value wasn't in the
+   original enum (documented in `schema.prisma`'s comment, same as every
+   other status column — see above). The admin panel needs a way to void
+   an order (customer walked out, mistake, etc.), and `restaurant_sessions`
+   already has its own `CANCELLED` for the same reason. No migration
+   needed — the column is a plain `VARCHAR(30)`, not a native enum, so this
+   is a documentation/type-list change, not a schema change.
 
 ## Business flow → code
 
@@ -141,6 +150,49 @@ The ТЗ's numbered pipeline, and where each step lives:
 Status enums (`order_status`, `order_item.status`, `payment_status`, …) and
 their allowed transitions live in `src/types/status.ts`, matching the
 values documented at the end of the ТЗ.
+
+## Admin panel
+
+`admin.html` (backend: `src/modules/admin`, mounted at `/api/admin/*`,
+gated to the `ADMIN` role only — unlike kitchen/waiter, this router doesn't
+accept `ADMIN` as a fallback for another role, since it's the one place
+that can rewrite the menu or void an order). Seven tabs:
+
+| Tab | What it does |
+|---|---|
+| Обзор | Free/occupied tables, active sessions, order counts by status, today's paid revenue, the 5 lowest-stock ingredients |
+| Столики | Create/rename tables, and a manual status override for unsticking a table (crashed kiosk, staff seated someone without opening a session) — forcing a table back to `FREE` while it has a live session cancels that session too, so they can't drift out of sync |
+| Заказы | Every order, any status (kitchen/waiter each only see their own slice) — filter by status, view full detail, **cancel** an order |
+| Меню | Categories and dishes — full editor including recipe lines, allergens, and available options, all as one form |
+| Склад | Ingredients + editable stock levels |
+| Опции и аллергены | Dish options (with their own ingredient cost) and allergens |
+| Сотрудники | Create/deactivate staff accounts, change role, reset a password |
+
+A few decisions specific to this part:
+
+- **No hard delete, anywhere in the admin panel.** Categories, dishes,
+  ingredients, options, allergens, and staff can all be referenced by past
+  orders (`ON DELETE RESTRICT` throughout the schema) — deleting one with
+  any history would fail, or worse, silently corrupt that history if the
+  constraint ever changed. Every "remove" action is really "deactivate"
+  (`isActive = false`, or for staff, the existing `is_active` column),
+  which is also just how a real restaurant works — you 86 a dish, you
+  don't erase that it was ever sold. Tables are the one exception where a
+  genuine `DELETE` is exposed (`DELETE /api/admin/tables/:id`), but it's
+  still blocked the same way if the table has any order/session history —
+  it only succeeds for a table that was created and never used.
+- **Order cancellation releases reservations, not consumption.** Cancelling
+  an order releases any ingredients still in `RESERVED` state back to free
+  stock. Anything already `CONSUMED` (the kitchen had started on it) stays
+  consumed — that food is made and can't be un-made. Cancelling also runs
+  the same "was this the session's last order?" check delivery uses, so a
+  cancelled last order still frees the table.
+- **`reserved_quantity` isn't admin-editable.** Only `stock_quantity` (what
+  a physical inventory count or a delivery would change) can be set by
+  hand; `reserved_quantity` is only ever written by the
+  checkout/kitchen reservation flow, and letting an admin hand-edit it
+  would let it drift out of sync with the reservation rows it's supposed
+  to sum to.
 
 ## Decisions made where the ТЗ was ambiguous
 
@@ -184,18 +236,13 @@ values documented at the end of the ТЗ.
 
 Kept in scope to what the ТЗ actually describes:
 
-- **Admin UI** — the `users.role = ADMIN` and dish/category/ingredient
-  management implied by the schema have no dedicated screen. The backend
-  has what it needs (Prisma Studio — `npx prisma studio` — works fine
-  against this schema for now); a real admin UI is a reasonable next step.
 - **Real-time push** — kitchen/waiter monitors poll every 5s rather than
   using WebSockets/SSE. Simple, works, and the ТЗ doesn't ask for
   sub-second updates; swapping in a push channel later wouldn't touch the
   business logic, only how `GET /orders` results reach the screen.
-- **Order/item cancellation** — the ТЗ's order-status enum has no
-  `CANCELLED` state and the pipeline never describes cancelling a placed
-  order, so no endpoint does it. `inventory_reservations.status` already
-  has a `RELEASED` value ready for whenever that's designed.
+- **Item-level cancellation** — the admin panel cancels a whole order; the
+  ТЗ never describes voiding a single dish out of an in-progress order, so
+  there's no endpoint for that narrower case.
 
 ## Demo data
 
