@@ -6,7 +6,7 @@
     background: var(--bg);
 }
 
-.staff-login-page {
+.staff-login-page:not([hidden]) {
     display: grid;
     place-items: center;
     min-height: 100vh;

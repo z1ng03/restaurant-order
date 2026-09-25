@@ -15,10 +15,16 @@ import { waiterRouter } from "./modules/waiter/waiter.routes";
 import { authRouter } from "./modules/auth/auth.routes";
 import { adminRouter } from "./modules/admin/admin.routes";
 
+
 export const app = express();
 
+app.disable("etag"); // API отдаёт живые данные — сверять их по ETag нельзя
 app.use(cors({ origin: env.corsOrigin }));
 app.use(express.json());
+app.use((_req, res, next) => {
+  res.set("Cache-Control", "no-store");
+  next();
+});
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
