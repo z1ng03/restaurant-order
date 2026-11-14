@@ -9,11 +9,15 @@ import * as ordersService from "./admin.orders.service";
 import * as catalogService from "./admin.catalog.service";
 import * as usersService from "./admin.users.service";
 import * as dashboardService from "./admin.dashboard.service";
+import * as auditService from "./admin.audit.service";
+import { auditLoyalty } from "../loyalty/loyalty.service";
+import { listReceipts } from "../receipts/receipts.service";
+import { INVENTORY_ADJUSTMENT_REASONS } from "../../types/status";
 
 export const adminRouter = Router();
 
 // Unlike kitchen/waiter (which also allow ADMIN as a fallback operator
-// role), this whole router is ADMIN-only — it's the one place that can
+// role), this whole router is ADMIN-only - it's the one place that can
 // rewrite the menu, override a table, or void an order.
 adminRouter.use(requireAuth, requireRole("ADMIN"));
 
@@ -119,11 +123,23 @@ adminRouter.get(
   }),
 );
 
+const cancelOrderSchema = z.object({
+  reason: z.string().max(500).optional(),
+  /** only meaningful for an order that was already PAID; see cancelOrder() */
+  refundDecision: z.enum(["REFUND", "NO_REFUND"]).optional(),
+});
+
 adminRouter.post(
   "/orders/:orderId/cancel",
   asyncHandler(async (req, res) => {
     const orderId = parseIdParam(req.params.orderId, "orderId");
-    res.json({ order: await ordersService.cancelOrder(orderId) });
+    const body = cancelOrderSchema.parse(req.body ?? {});
+    const result = await ordersService.cancelOrder(orderId, {
+      actorUserId: req.staff ? BigInt(req.staff.userId) : null,
+      reason: body.reason ?? null,
+      ...(body.refundDecision ? { refundDecision: body.refundDecision } : {}),
+    });
+    res.json(result);
   }),
 );
 
@@ -200,20 +216,134 @@ adminRouter.patch(
   }),
 );
 
-const setStockSchema = z.object({ stockQuantity: z.number().min(0) });
+const quantityInput = z.union([z.number(), z.string().regex(/^-?\d+(\.\d+)?$/)]);
+
+const setStockSchema = z.object({
+  stockQuantity: quantityInput,
+  reason: z.enum(INVENTORY_ADJUSTMENT_REASONS).optional(),
+  comment: z.string().max(500).optional(),
+});
+
+function stockContext(req: import("express").Request, body: { reason?: (typeof INVENTORY_ADJUSTMENT_REASONS)[number] | undefined; comment?: string | undefined }) {
+  return { actorUserId: req.staff ? BigInt(req.staff.userId) : null, reason: body.reason, comment: body.comment };
+}
 
 adminRouter.patch(
   "/ingredients/:ingredientId/stock",
   asyncHandler(async (req, res) => {
     const ingredientId = parseIdParam(req.params.ingredientId, "ingredientId");
-    const { stockQuantity } = setStockSchema.parse(req.body);
-    res.json({ inventory: await catalogService.setIngredientStock(ingredientId, stockQuantity) });
+    const body = setStockSchema.parse(req.body);
+    res.json({ inventory: await catalogService.setIngredientStock(ingredientId, body.stockQuantity, stockContext(req, body)) });
+  }),
+);
+
+const movementSchema = z.object({ quantity: quantityInput, comment: z.string().max(500).optional() });
+
+/** Goods receipt ("приёмка"): adds to the stock. */
+adminRouter.post(
+  "/ingredients/:ingredientId/stock/receive",
+  asyncHandler(async (req, res) => {
+    const ingredientId = parseIdParam(req.params.ingredientId, "ingredientId");
+    const body = movementSchema.parse(req.body);
+    res.json({ inventory: await catalogService.receiveIngredientStock(ingredientId, body.quantity, stockContext(req, body)) });
+  }),
+);
+
+/** Write-off (spoilage / breakage). Never below what is reserved. */
+adminRouter.post(
+  "/ingredients/:ingredientId/stock/write-off",
+  asyncHandler(async (req, res) => {
+    const ingredientId = parseIdParam(req.params.ingredientId, "ingredientId");
+    const body = movementSchema.parse(req.body);
+    res.json({ inventory: await catalogService.writeOffIngredientStock(ingredientId, body.quantity, stockContext(req, body)) });
+  }),
+);
+
+/** The stock journal: who changed what, when, from/to, and why. */
+adminRouter.get(
+  "/inventory-adjustments",
+  asyncHandler(async (req, res) => {
+    const query = z
+      .object({ ingredientId: idString.optional(), limit: z.coerce.number().int().positive().max(200).default(50) })
+      .parse(req.query);
+    res.json({
+      adjustments: await catalogService.listInventoryAdjustments({
+        ingredientId: query.ingredientId ? BigInt(query.ingredientId) : undefined,
+        limit: query.limit,
+      }),
+    });
+  }),
+);
+
+/* ------------------------- Ingredient allergen tags -------------------------- */
+
+const allergenTagSchema = z.object({ allergenId: idString, kind: z.enum(["CONTAINS", "MAY_CONTAIN"]).default("CONTAINS") });
+
+adminRouter.get(
+  "/ingredient-allergens",
+  asyncHandler(async (_req, res) => {
+    res.json({ ingredients: await catalogService.listIngredientAllergens() });
+  }),
+);
+
+adminRouter.post(
+  "/ingredient-allergens",
+  asyncHandler(async (req, res) => {
+    const body = allergenTagSchema.extend({ ingredientId: idString }).parse(req.body);
+    res.status(201).json({
+      tag: await catalogService.addIngredientAllergen(BigInt(body.ingredientId), BigInt(body.allergenId), body.kind),
+    });
+  }),
+);
+
+/** Replaces the complete tag set of one ingredient. */
+adminRouter.patch(
+  "/ingredient-allergens/:ingredientId",
+  asyncHandler(async (req, res) => {
+    const ingredientId = parseIdParam(req.params.ingredientId, "ingredientId");
+    const body = z.object({ allergens: z.array(allergenTagSchema).max(30) }).parse(req.body);
+    res.json({
+      allergens: await catalogService.setIngredientAllergens(
+        ingredientId,
+        body.allergens.map((a) => ({ allergenId: BigInt(a.allergenId), kind: a.kind })),
+      ),
+    });
+  }),
+);
+
+/* ------------------------------ Audits & receipts ----------------------------- */
+
+adminRouter.get(
+  "/inventory-audit",
+  asyncHandler(async (_req, res) => {
+    res.json(await auditService.auditInventory());
+  }),
+);
+
+adminRouter.get(
+  "/loyalty-audit",
+  asyncHandler(async (_req, res) => {
+    res.json(await auditLoyalty());
+  }),
+);
+
+adminRouter.get(
+  "/receipts",
+  asyncHandler(async (req, res) => {
+    const { limit } = z.object({ limit: z.coerce.number().int().positive().max(200).default(50) }).parse(req.query);
+    res.json({ receipts: await listReceipts(limit) });
   }),
 );
 
 /* ---------------------------------- Dishes ---------------------------------- */
 
-const recipeLineSchema = z.object({ ingredientId: idString, quantity: z.number().positive() });
+const recipeLineSchema = z.object({
+  ingredientId: idString,
+  quantity: quantityInput,
+  /** personalisation step per serving, in the ingredient's base unit; defaults to half the base amount */
+  adjustmentStep: quantityInput.optional(),
+  isCustomizable: z.boolean().optional(),
+});
 
 const dishWriteSchema = z.object({
   categoryId: idString.optional(),
@@ -223,6 +353,7 @@ const dishWriteSchema = z.object({
   description: z.string().max(4000).optional(),
   is21Plus: z.boolean().optional(),
   isActive: z.boolean().optional(),
+  inventoryTracked: z.boolean().optional(),
   recipe: z.array(recipeLineSchema).optional(),
   allergenIds: z.array(idString).optional(),
   availableOptionIds: z.array(idString).optional(),
@@ -232,7 +363,12 @@ function toDishServiceInput(body: z.infer<typeof dishWriteSchema>) {
   return {
     ...body,
     categoryId: body.categoryId ? BigInt(body.categoryId) : undefined,
-    recipe: body.recipe?.map((r) => ({ ingredientId: BigInt(r.ingredientId), quantity: r.quantity })),
+    recipe: body.recipe?.map((r) => ({
+      ingredientId: BigInt(r.ingredientId),
+      quantity: r.quantity,
+      adjustmentStep: r.adjustmentStep,
+      isCustomizable: r.isCustomizable,
+    })),
     allergenIds: body.allergenIds?.map((id) => BigInt(id)),
     availableOptionIds: body.availableOptionIds?.map((id) => BigInt(id)),
   };
@@ -285,6 +421,7 @@ const optionWriteSchema = z.object({
   price: z.number().nonnegative().optional(),
   description: z.string().max(2000).optional(),
   isActive: z.boolean().optional(),
+  inventoryTracked: z.boolean().optional(),
   ingredients: z.array(optionIngredientSchema).optional(),
 });
 
@@ -331,7 +468,11 @@ adminRouter.get(
   }),
 );
 
-const allergenWriteSchema = z.object({ name: z.string().min(1).max(100), description: z.string().max(2000).optional() });
+const allergenWriteSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().max(4000).optional(),
+  sortOrder: z.number().int().optional(),
+});
 
 adminRouter.post(
   "/allergens",

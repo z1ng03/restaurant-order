@@ -1,5 +1,5 @@
 /**
- * Every status column in the schema is a plain VARCHAR — the ERD documents
+ * Every status column in the schema is a plain VARCHAR - the ERD documents
  * allowed values in a comment rather than a native Postgres enum, and this
  * file keeps the same approach on the TypeScript side: union types here,
  * checked at the API boundary by the zod schemas in each module, rather
@@ -22,7 +22,7 @@ export const ORDER_STATUSES = [
   "OUT_FOR_DELIVERY",
   "DELIVERED",
   // ADDED (admin panel): the ТЗ's pipeline never describes cancelling a
-  // placed order, so this wasn't in the original enum — but "admin control
+  // placed order, so this wasn't in the original enum - but "admin control
   // over orders" needs a way to void one (customer walked out, mistake,
   // etc.), and restaurant_sessions already has its own CANCELLED for the
   // same reason. Purely additive: nothing existing reads/writes this value
@@ -34,7 +34,7 @@ export type OrderStatus = (typeof ORDER_STATUSES)[number];
 export const ORDER_ITEM_STATUSES = ["WAITING", "PREPARING", "READY", "HANDED_TO_WAITER", "DELIVERED"] as const;
 export type OrderItemStatus = (typeof ORDER_ITEM_STATUSES)[number];
 
-/** Order.payment_status — separate from order_status by design (see ТЗ §6). */
+/** Order.payment_status - separate from order_status by design (see ТЗ §6). */
 export const ORDER_PAYMENT_STATUSES = ["WAITING_FOR_PAYMENT", "WAITING_FOR_CASH", "PAID"] as const;
 export type OrderPaymentStatus = (typeof ORDER_PAYMENT_STATUSES)[number];
 
@@ -43,6 +43,10 @@ export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
 export const PAYMENT_STATUSES = ["WAITING_FOR_CASH", "PAID"] as const;
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
+
+/** payments.refund_status - REFUND_REQUIRED means money must go back through the REAL payment channel. */
+export const PAYMENT_REFUND_STATUSES = ["NONE", "REFUND_REQUIRED"] as const;
+export type PaymentRefundStatus = (typeof PAYMENT_REFUND_STATUSES)[number];
 
 export const INVENTORY_RESERVATION_STATUSES = ["RESERVED", "CONSUMED", "RELEASED"] as const;
 export type InventoryReservationStatus = (typeof INVENTORY_RESERVATION_STATUSES)[number];
@@ -88,7 +92,7 @@ export function canTransitionOrder(from: OrderStatus, to: OrderStatus): boolean 
   return ORDER_TRANSITIONS[from].includes(to);
 }
 
-/** Admin-only escape hatch — any order not yet DELIVERED or already CANCELLED can be voided. */
+/** Admin-only escape hatch - any order not yet DELIVERED or already CANCELLED can be voided. */
 export function canCancelOrder(status: OrderStatus): boolean {
   return status !== "DELIVERED" && status !== "CANCELLED";
 }
@@ -96,3 +100,38 @@ export function canCancelOrder(status: OrderStatus): boolean {
 export function isAgeRestrictedRequired(is21Plus: boolean): boolean {
   return is21Plus === true;
 }
+
+// ---------------------------------------------------------------------------
+// Technical_TZ_Restaurant_Order_v2.md additions
+// ---------------------------------------------------------------------------
+
+/** order_status_events.event_type - at most ONE row per order and type. */
+export const ORDER_EVENT_TYPES = [
+  "ORDER_CREATED",
+  "PAYMENT_CONFIRMED",
+  "COOKING_STARTED",
+  "READY_FOR_DELIVERY",
+  "OUT_FOR_DELIVERY",
+  "DELIVERED",
+  "CANCELLED",
+] as const;
+export type OrderEventType = (typeof ORDER_EVENT_TYPES)[number];
+
+export const ORDER_EVENT_ACTOR_TYPES = ["SYSTEM", "GUEST", "CLIENT", "STAFF"] as const;
+export type OrderEventActorType = (typeof ORDER_EVENT_ACTOR_TYPES)[number];
+
+/** loyalty_ledger.type and the sign each type must carry (also enforced by a DB CHECK). */
+export const LOYALTY_TYPES = ["EARN", "SPEND", "REVERSE_EARN", "REFUND_SPEND"] as const;
+export type LoyaltyType = (typeof LOYALTY_TYPES)[number];
+
+export const IDENTITY_STATUSES = ["UNVERIFIED", "PENDING", "VERIFIED", "REJECTED", "EXPIRED"] as const;
+export type IdentityStatus = (typeof IDENTITY_STATUSES)[number];
+
+export const IDENTITY_MODES = ["DEMO", "PROVIDER"] as const;
+export type IdentityMode = (typeof IDENTITY_MODES)[number];
+
+export const INVENTORY_ADJUSTMENT_REASONS = ["INITIAL", "RECEIPT", "CORRECTION", "WRITE_OFF"] as const;
+export type InventoryAdjustmentReason = (typeof INVENTORY_ADJUSTMENT_REASONS)[number];
+
+export const RECEIPT_CHANNELS = ["EMAIL", "TELEGRAM"] as const;
+export type ReceiptChannel = (typeof RECEIPT_CHANNELS)[number];

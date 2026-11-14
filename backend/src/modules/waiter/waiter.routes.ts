@@ -44,7 +44,7 @@ waiterRouter.patch(
   "/orders/:orderId/delivered",
   asyncHandler(async (req, res) => {
     const orderId = parseIdParam(req.params.orderId, "orderId");
-    const order = await waiterService.markDelivered(orderId);
+    const order = await waiterService.markDelivered(orderId, currentWaiterId(req));
     res.json({ order });
   }),
 );

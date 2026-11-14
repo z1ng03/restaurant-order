@@ -5,15 +5,15 @@ import { assertSessionActive } from "../sessions/sessions.service";
 
 /**
  * ТЗ §5: "К клиенту подходит официант и проверяет возраст ... Проверка
- * относится к конкретному клиенту/сессии и должна иметь историю" — the
+ * относится к конкретному клиенту/сессии и должна иметь историю" - the
  * check is scoped to the *session*, not to one order, so one confirmed
  * check covers every 21+ order placed for the rest of that visit.
  *
  * The ТЗ doesn't specify exactly how the waiter's identity reaches the
  * system at this step (unlike payment, which explicitly uses the
- * card-tap/Arduino flow). The simplest faithful reading — a real staff
+ * card-tap/Arduino flow). The simplest faithful reading - a real staff
  * member's login/password, entered on the table's monitor when they walk
- * over — is what's implemented here: it satisfies "verified_by = an actual
+ * over - is what's implemented here: it satisfies "verified_by = an actual
  * authenticated waiter" without inventing hardware the ТЗ never mentions.
  * If a dedicated waiter device is added later, this is the one place to
  * change (swap the inline credential check for the same JWT auth the
@@ -62,7 +62,7 @@ export async function sessionHasVerifiedAge(sessionId: bigint): Promise<boolean>
 /**
  * Best-effort audit link: attach the session's most recent successful
  * verification to a freshly created order, if it isn't already linked to
- * an earlier one. Never blocks order creation if this can't find a row —
+ * an earlier one. Never blocks order creation if this can't find a row -
  * the gate check (`sessionHasVerifiedAge`) already ran before checkout.
  */
 export async function linkAgeVerificationToOrder(sessionId: bigint, orderId: bigint) {

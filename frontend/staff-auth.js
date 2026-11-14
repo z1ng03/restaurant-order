@@ -1,4 +1,4 @@
-// Shared by kitchen.html and waiter.html — both are staff-only screens
+// Shared by kitchen.html and waiter.html - both are staff-only screens
 // gated behind a login (see lib/auth.ts + middleware/auth.middleware.ts on
 // the backend for the actual enforcement; this is just the UI side).
 
@@ -23,7 +23,7 @@ function clearStaffSession() {
 
 /**
  * Shows a login form until a staff member with an allowed role signs in,
- * then reveals the actual monitor UI. Returns nothing — call `onReady`
+ * then reveals the actual monitor UI. Returns nothing - call `onReady`
  * once, when a valid session becomes available.
  */
 function initStaffGate({ allowedRoles, roleLabel, onReady }) {

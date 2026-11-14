@@ -47,6 +47,7 @@
             <button class="admin-tab" data-tab="menu" type="button">Меню</button>
             <button class="admin-tab" data-tab="inventory" type="button">Склад</button>
             <button class="admin-tab" data-tab="options" type="button">Опции и аллергены</button>
+            <button class="admin-tab" type="button" data-tab="audit">Чеки и аудит</button>
             <button class="admin-tab" data-tab="staff" type="button">Сотрудники</button>
         </nav>
 
@@ -164,9 +165,33 @@
                     <tbody></tbody>
                 </table>
             </div>
+        
+            <div class="admin-subsection">
+                <h3>Аллергены ингредиентов</h3>
+                <p class="admin-muted-cell">Аллергены задаются у ингредиентов (20 категорий), а список блюда строится по тому, что в нём реально лежит.</p>
+                <div class="admin-table-wrap">
+                    <table class="admin-table" id="ingredient-allergens-table">
+                        <thead><tr><th>Ингредиент</th><th>Категории</th><th></th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
         </section>
 
         <!-- Сотрудники -->
+        <section class="admin-panel" data-panel="audit" hidden>
+            <div class="admin-panel-head">
+                <h2>Чеки, кэшбэк и аудит склада</h2>
+                <button class="secondary-btn" id="audit-refresh-btn" type="button">Обновить</button>
+            </div>
+            <h3>Последние чеки и попытки отправки</h3>
+            <div class="admin-table-wrap" id="audit-receipts"></div>
+            <h3>Проверка кэшбэка</h3>
+            <div id="audit-loyalty"></div>
+            <h3>Проверка остатков склада</h3>
+            <div id="audit-inventory"></div>
+        </section>
+
         <section class="admin-panel" id="panel-staff" data-panel="staff" hidden>
             <div class="admin-panel-header">
                 <h2>Сотрудники</h2>

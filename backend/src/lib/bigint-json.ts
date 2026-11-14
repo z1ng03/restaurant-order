@@ -3,7 +3,7 @@
  * JS `bigint`. `JSON.stringify` throws on `bigint` by default, so every id
  * would crash `res.json(...)`. The standard fix (and the one Prisma's own
  * docs suggest) is to give `BigInt` a `toJSON`, turning ids into strings on
- * the wire. Import this module once, before any route handles a request —
+ * the wire. Import this module once, before any route handles a request -
  * `app.ts` does that.
  *
  * Numeric strings keep 64-bit ids exact in JSON (a plain JS `number` loses

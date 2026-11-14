@@ -13,7 +13,7 @@
             <h1>Выберите столик</h1>
             <p>На настоящем киоске монитор всегда открывает один и тот же адрес вида
                <code>index.html?monitor=7</code> и никогда не видит этот экран.
-               Здесь — просто чтобы проверить приложение без шести физических мониторов.</p>
+               Здесь - просто чтобы проверить приложение без шести физических мониторов.</p>
             <div id="table-list" class="monitor-table-list">Загрузка столиков…</div>
         </div>
     </main>
@@ -21,23 +21,26 @@
     <script src="api.js"></script>
     <script>
         const params = new URLSearchParams(location.search);
-        const next = params.get("next") || "index.html";
+        // `next` comes from the URL, so it is only ever one of OUR pages (no open redirect / javascript: URL).
+        const PAGES = ["index.html", "cart.html", "account.html", "orders.html", "profile.html"];
+        const requested = (params.get("next") || "").split("/").pop();
+        const next = PAGES.includes(requested) ? requested : "index.html";
 
         async function loadTables() {
             const container = document.getElementById("table-list");
             try {
                 const { tables } = await api.get("/tables");
                 if (!tables.length) {
-                    container.textContent = "Столики не найдены — запустите сид-скрипт бэкенда (npm run seed).";
+                    container.textContent = "Столики не найдены - запустите сид-скрипт бэкенда (npm run seed).";
                     return;
                 }
                 container.innerHTML = "";
                 for (const table of tables) {
                     const btn = document.createElement("button");
                     btn.className = "monitor-table-btn";
-                    btn.innerHTML = `<strong>Столик №${table.tableNumber}</strong><span>${table.status === "FREE" ? "свободен" : "занят"}</span>`;
+                    btn.innerHTML = `<strong>Столик №${escapeHtml(table.tableNumber)}</strong><span>${table.status === "FREE" ? "свободен" : "занят"}</span>`;
                     btn.addEventListener("click", () => {
-                        location.href = `${next}?monitor=${table.monitorNumber}`;
+                        location.href = `${next}?monitor=${encodeURIComponent(table.monitorNumber)}`;
                     });
                     container.appendChild(btn);
                 }

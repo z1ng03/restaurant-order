@@ -1,7 +1,7 @@
 // ТЗ §§9-11: kitchen sees every order still in the kitchen (order_status =
 // SENT_TO_KITCHEN), can inspect each dish's ingredients, and advances each
 // item WAITING -> PREPARING -> READY -> HANDED_TO_WAITER. No websocket in
-// this build — a short poll interval keeps the board current instead.
+// this build - a short poll interval keeps the board current instead.
 
 const NEXT_STATUS = { WAITING: "PREPARING", PREPARING: "READY", READY: "HANDED_TO_WAITER" };
 const STATUS_LABEL = {
@@ -65,11 +65,19 @@ function renderOrderCard(order, token) {
   header.className = "staff-order-header";
   header.innerHTML = `
     <div>
-      <strong>Заказ №${order.orderId}</strong>
-      <span class="staff-order-meta">Столик №${order.table.tableNumber} · ${timeSince(order.createdAt)}</span>
+      <strong>Заказ №${escapeHtml(order.orderId)}</strong>
+      <span class="staff-order-meta">Столик №${escapeHtml(order.table.tableNumber)} · ${escapeHtml(timeSince(order.createdAt))}</span>
     </div>
   `;
   card.appendChild(header);
+
+  // ONE comment for the whole order (FR-10). Shown only when there is one; the text is escaped, line breaks kept.
+  if (order.comment) {
+    const comment = document.createElement("p");
+    comment.className = "staff-order-comment";
+    comment.innerHTML = `<strong>Комментарий гостя:</strong> ${escapeHtml(order.comment)}`;
+    card.appendChild(comment);
+  }
 
   const itemsEl = document.createElement("div");
   itemsEl.className = "staff-order-items";
@@ -81,26 +89,50 @@ function renderOrderCard(order, token) {
   return card;
 }
 
+/**
+ * What the chef cooks is the composition AS ORDERED (order_item_ingredients snapshot), never the current recipe:
+ *   ✕ removed            «Лук - убрать»
+ *   ± changed            «Сыр: 75 г на порцию (по рецепту 50 г) × 2 = 150 г»
+ *   + added by an option «Бекон (опция): 50 г × 2 = 100 г»
+ * Orders placed before snapshots existed say so and fall back to the current recipe, clearly labelled as such.
+ */
+function renderComposition(item) {
+  if (!item.snapshotAvailable) {
+    const recipe = item.dish.recipes.map((r) => `${escapeHtml(r.ingredient.name)} - ${escapeHtml(r.quantity)} ${escapeHtml(r.ingredient.unit)}`).join(", ");
+    return `<p class="staff-item-sub staff-legacy">Состав на момент заказа не сохранён. Справочно, текущий рецепт блюда: ${recipe || "-"}</p>`;
+  }
+  const lines = item.ingredientsActual;
+  const changes = lines.filter((l) => l.change !== "UNCHANGED").map((l) => {
+    if (l.change === "REMOVED") return `<li class="change-removed">✕ ${escapeHtml(l.name)} - убрать</li>`;
+    if (l.change === "ADDED") return `<li class="change-added">+ ${escapeHtml(l.name)} (опция): ${escapeHtml(l.display.perServing)} × ${l.servings} = ${escapeHtml(l.display.total)}</li>`;
+    return `<li class="change-changed">± ${escapeHtml(l.name)}: ${escapeHtml(l.display.perServing)} на порцию (по рецепту ${escapeHtml(l.display.base)}) × ${l.servings} = ${escapeHtml(l.display.total)}</li>`;
+  });
+  const all = lines
+    .filter((l) => l.source === "RECIPE" ? l.change !== "REMOVED" : true)
+    .map((l) => `${escapeHtml(l.name)}${l.source === "OPTION" ? " (опция)" : ""} - ${escapeHtml(l.display.total)}`)
+    .join(", ");
+  return `
+    ${changes.length ? `<ul class="staff-changes">${changes.join("")}</ul>` : ""}
+    <details class="staff-ingredients">
+      <summary>Все ингредиенты на ${item.quantity} порц.</summary>
+      <p>${all || "-"}</p>
+    </details>`;
+}
+
 function renderOrderItem(item, token) {
   const row = document.createElement("div");
-  row.className = `staff-item staff-item-${item.status.toLowerCase()}`;
+  row.className = `staff-item staff-item-${String(item.status).toLowerCase().replace(/[^a-z_]/g, "")}`;
 
-  const ingredientLines = item.dish.recipes
-    .map((r) => `${r.ingredient.name} — ${r.quantity}${r.ingredient.unit}`)
-    .join(", ");
-  const optionLines = item.options.map((o) => o.option.name).join(", ");
+  const optionLines = item.options.map((o) => escapeHtml(o.option.name) + (o.quantity > 1 ? ` ×${o.quantity}` : "")).join(", ");
 
   row.innerHTML = `
     <div class="staff-item-main">
-      <strong>${item.dish.name} × ${item.quantity}</strong>
-      <span class="staff-status-badge">${STATUS_LABEL[item.status] ?? item.status}</span>
+      <strong>${escapeHtml(item.dish.name)} × ${item.quantity}</strong>
+      <span class="staff-status-badge">${escapeHtml(STATUS_LABEL[item.status] ?? item.status)}</span>
     </div>
     ${optionLines ? `<p class="staff-item-sub">Доп: ${optionLines}</p>` : ""}
-    ${item.notes ? `<p class="staff-item-sub">Комментарий: ${item.notes}</p>` : ""}
-    <details class="staff-ingredients">
-      <summary>Ингредиенты</summary>
-      <p>${ingredientLines || "—"}</p>
-    </details>
+    ${item.notes ? `<p class="staff-item-sub">Пометка к блюду: ${escapeHtml(item.notes)}</p>` : ""}
+    ${renderComposition(item)}
   `;
 
   const nextStatus = NEXT_STATUS[item.status];
@@ -112,12 +144,13 @@ function renderOrderItem(item, token) {
     btn.addEventListener("click", async () => {
       btn.disabled = true;
       try {
-        await api.patch(`/kitchen/order-items/${item.orderItemId}/status`, { status: nextStatus }, { token });
+        await api.patch(`/kitchen/order-items/${item.orderItemId}/status`, { status: nextStatus }, { token: getStaffSession().token });
         const session = getStaffSession();
         await loadOrders(session.token);
       } catch (err) {
         showToast(err.message);
         btn.disabled = false;
+        loadOrders(getStaffSession().token); // e.g. the order was cancelled meanwhile
       }
     });
     row.appendChild(btn);

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>История заказов</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="account.css">
+</head>
+<body class="account-body">
+    <main class="account-page">
+        <header class="account-header">
+            <div>
+                <p class="eyebrow">Личный кабинет</p>
+                <h1>История заказов</h1>
+            </div>
+            <nav class="account-nav" aria-label="Навигация">
+                <a href="account.html">← Кабинет</a>
+                <a href="index.html">Меню</a>
+                <a href="profile.html">Профиль</a>
+            </nav>
+        </header>
+
+        <section class="account-card" aria-live="polite">
+            <p class="muted" id="orders-status">Загрузка…</p>
+            <div id="orders-list"></div>
+            <button class="secondary-action" id="orders-more" type="button" hidden>Показать ещё</button>
+        </section>
+    </main>
+
+    <!-- Подробности заказа -->
+    <div class="account-modal" id="detail-modal" hidden>
+        <div class="account-modal-card" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+            <button class="modal-x" id="detail-close" type="button" aria-label="Закрыть">×</button>
+            <h2 id="detail-title">Заказ</h2>
+            <div id="detail-body"></div>
+        </div>
+    </div>
+
+    <!-- Результат «Заказать ещё раз» -->
+    <div class="account-modal" id="reorder-modal" hidden>
+        <div class="account-modal-card" role="dialog" aria-modal="true" aria-labelledby="reorder-title">
+            <button class="modal-x" id="reorder-close" type="button" aria-label="Закрыть">×</button>
+            <h2 id="reorder-title">Повтор заказа</h2>
+            <div id="reorder-body"></div>
+            <div class="inline-actions" style="margin-top:16px">
+                <a class="primary-action" id="reorder-to-cart" href="cart.html" style="text-decoration:none;text-align:center;display:inline-block;width:auto;line-height:26px">Перейти в корзину</a>
+                <button class="secondary-action" id="reorder-dismiss" type="button">Остаться здесь</button>
+            </div>
+        </div>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="api.js"></script>
+    <script src="ui.js"></script>
+    <script src="client-auth.js"></script>
+    <script src="session.js"></script>
+    <script src="receipt.js"></script>
+    <script src="orders.js"></script>
+</body>
+</html>

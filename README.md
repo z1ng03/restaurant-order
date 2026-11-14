@@ -1,254 +1,115 @@
-# Restaurant Order — backend + integrated frontend
+# Restaurant Order - меню, корзина, кухня, официант, личный кабинет
 
-A table-side ordering system: a kiosk-style menu/cart/checkout screen tied to
-one physical monitor per table, a kitchen monitor, and a waiter monitor.
-Built against `Техническое_задание.docx` and `Database - Лист1.pdf`.
+Система заказа за столиком: киоск-монитор на каждом столе (меню → корзина → оплата), монитор шефа, монитор официанта, админ-панель и **личный кабинет гостя** (история заказов, кэшбэк, чеки, проверка возраста).
 
-This pass adds a complete **TypeScript backend** (there wasn't one — `backend/index.ts`
-was `console.log("qwe")` with zero dependencies) and wires the existing
-frontend prototype to it instead of a hardcoded menu + `localStorage` cart,
-plus three new screens (kitchen monitor, waiter monitor, and an admin
-panel) that the ТЗ implies but that didn't exist yet in the repo.
+Этот релиз реализует `Technical_TZ_Restaurant_Order_v2.md` поверх существующего проекта. Прежняя документация сохранена в [`docs/README_v1_original.md`](docs/README_v1_original.md); список эндпоинтов - в [`docs/API_v2.md`](docs/API_v2.md).
 
-## Stack
+**Стек.** Backend: Node.js, TypeScript, Express, Prisma 5, PostgreSQL, Zod, JWT + bcrypt, nodemailer. Frontend: чистый HTML/CSS/JS (без сборки). Тесты: Vitest + Supertest.
 
-- **Backend**: Node.js, TypeScript, Express, **Prisma** ORM, PostgreSQL, Zod
-  (validation), JWT + bcrypt (staff auth)
-- **Frontend**: the original plain HTML/CSS/JS, unchanged where possible,
-  now calling the backend over `fetch`
-
-## Project structure
-
-```
-backend/
-  prisma/
-    schema.prisma        # data model (see "Schema" below)
-    migrations/           # initial migration, ready to apply
-    seed.ts                # demo data: staff, tables, the same 18 dishes
-                            # already in the old frontend's MENU array
-  src/
-    modules/                # one folder per business area (see below)
-    middleware/, lib/, types/, config/, db/
-    app.ts, server.ts
-frontend/
-  index.html, cart.html      # existing client screens, now API-backed
-  kitchen.html, kitchen.js   # chef monitor
-  waiter.html, waiter.js     # waiter monitor
-  admin.html, admin.js, admin.css  # NEW — admin panel (see below)
-  monitor-select.html        # local-dev table picker (see below)
-  api.js, session.js, staff-auth.js, serial-payment.js  # shared client-side helpers
-  style.css, staff.css       # existing styles + additions for the staff/admin screens
-  arduino/rc522_payment.ino  # untouched — see "Payment hardware" below
-```
-
-## Quick start
-
-### 1. Database
+## Быстрый старт
 
 ```bash
-createdb restaurant_order   # or however you provision Postgres
+# 1. База и backend
+createdb restaurant_order
 cd backend
-cp .env.example .env        # fill in DATABASE_URL, JWT_SECRET, etc.
+cp .env.example .env            # заполните DATABASE_URL и JWT_SECRET
 npm install
-npx prisma migrate deploy   # applies prisma/migrations/20260916000000_init
-npm run seed                # staff users, 6 tables, the 18-dish menu
-npm run dev                 # http://localhost:4000
+npx prisma migrate deploy       # применяет обе миграции (init + v2, v2 - аддитивная)
+npm run seed:reference          # столы, 20 категорий аллергенов, меню, рецепты, склад (идемпотентно)
+npm run seed:demo               # только dev: демо-аккаунт, оплаченный и «в работе» заказы
+npm run dev                     # http://localhost:4000
+
+# 2. Frontend (любой статический сервер)
+cd ../frontend && python -m http.server 8000      # или start_server.bat
 ```
 
-If you'd rather iterate on the schema than use the checked-in migration,
-`npx prisma migrate dev` works too (it will detect the schema already
-matches and offer to apply cleanly, or you can drop the database and let it
-generate migrations from scratch).
+| Что | Адрес |
+|---|---|
+| Монитор стола 1 | `http://localhost:8000/index.html?monitor=1` |
+| Кухня / официант / админ | `kitchen.html` · `waiter.html` · `admin.html` (демо-вход: `marat/chef123`, `aigerim/waiter123`, `admin/admin123`) |
+| Демо-гость | `demo.client@example.com` / `Demo-12345` |
+| Выбор стола без 6 мониторов | `monitor-select.html` (только для разработки) |
 
-> **A note on `npx prisma generate` / `migrate`, in case you hit the same wall I did:**
-> these commands download a query-engine binary from Prisma's CDN
-> (`binaries.prisma.sh`) the first time you run them. The sandbox this was
-> built in whitelists specific domains for outbound traffic and that one
-> wasn't on the list, so I could not run `prisma generate` or a live Prisma
-> Client inside it. I validated the schema and every non-trivial piece of
-> business logic (inventory reservation math, per-item consumption,
-> checkout → kitchen → waiter → session/table lifecycle) by hand-translating
-> `schema.prisma` into the SQL in `prisma/migrations/.../migration.sql` and
-> running that against a real local Postgres — see the migration file, it's
-> exactly what `prisma migrate dev` would have generated. On a normal machine
-> with regular internet access, `npm install` + `prisma generate` just work;
-> nothing about the code depends on the sandbox's restriction.
+**Обновление существующей базы.** `npx prisma migrate deploy` → `npm run seed:reference` (добавит категории аллергенов, теги, шаги рецептов и заполнит пустые описания; ничего не перезапишет) → `npm run backfill` (отчёт, при необходимости `-- --receipts`). Если в старых данных склад нарушает `0 ≤ reserved ≤ stock`, миграция **остановится с понятным сообщением** и ничего не изменит: посмотрите `npm run audit:inventory`, исправьте осознанно и повторите.
 
-### 2. Frontend
+## Что реализовано (ТЗ v2 → код)
+
+| Требование | Где |
+|---|---|
+| FR-01 описания блюд (все 18; для активного блюда обязательно) | `prisma/seed.data.ts`, `admin.catalog.service.ts` |
+| FR-02 состав: шаг, 0…3× от нормы, «убрать», резерв и списание по выбранному составу, опции на порцию | `menu/recipeCalculation.service.ts`, `cart`, `checkout`, `inventory.service.ts`, `script.js` (карточка блюда) |
+| FR-03 аллергены у ингредиентов (20 категорий), группы по реальному составу, «содержит» ≠ «следы» | `menu.service.ts`, `admin/ingredient-allergens`, `script.js` |
+| FR-04 личный кабинет: кнопка под корзиной, вход/регистрация, 2 кнопки-иконки | `account.html`, `index.html` |
+| FR-05 аккаунты, история, детали, оценка, «заказать ещё раз», профиль, пароль, удаление, проверка личности | `modules/clientAuth`, `clientAccount`, `identity`, `orders.html`, `profile.html` |
+| FR-06 кэшбэк 5 % / списание ≤ 50 %, леджер, возвраты | `modules/loyalty`, `checkout.service.ts` |
+| FR-07 чек (DEMO, неизменяемый снимок), e-mail, Telegram | `modules/receipts`, `integrations`, `receipt.js` |
+| FR-08 доступность блюд по рецепту + остаткам + резервам | `inventory.service.ts` |
+| FR-09 трекер заказа (виджет + окно, события, опрос 5 с) | `modules/orderTracking`, `tracker.js` |
+| FR-10 один комментарий к заказу → корзина → кухня/официант | `cart`, `kitchen`, `waiter`, `kitchen.js`, `waiter.js` |
+| FR-12 склад: атомарный резерв, защита остатка ниже резерва, журнал, приёмка/списание, аудит | `inventory.service.ts`, `admin.catalog.service.ts`, `scripts/auditInventory.ts` |
+| §5.2 секрет киоска, идемпотентность оформления, rate-limit | `middleware/kiosk.middleware.ts`, `lib/idempotency.ts`, `lib/rateLimit.ts` |
+
+### Как это устроено (коротко)
+
+* **Состав заказа - факт, а не рецепт.** При оформлении каждая позиция получает снимок `order_item_ingredients` (база / выбрано / всего, источник RECIPE или OPTION). Кухня видит «Сыр: 75 г на порцию (по рецепту 50 г) × 2 = 150 г», «Лук - убрать», «Бекон (опция): 50 г × 2 = 100 г»; для старых заказов честно написано «состав не сохранён».
+* **Оформление - одна транзакция:** ключ идемпотентности → блокировка корзины → блокировка клиента → проверка → цена и кэшбэк → заказ + снимок → **условный** `UPDATE inventory … WHERE stock − reserved ≥ need` по каждому ингредиенту (в порядке id) → оплата → бонусы → события → чек → очистка корзины. Любой сбой откатывает всё.
+* **Кэшбэк.** `loyalty_ledger` - append-only (триггер БД), баланс = сумма журнала (`bonus_balance` - кэш). Списание блокирует бонусы сразу (даже для наличных), начисление - только когда платёж реально `PAID`. Отмена неоплаченного заказа возвращает бонусы; отмена оплаченного с решением «возврат» возвращает потраченные, снимает начисленные (не уходя в минус) и помечает платёж `REFUND_REQUIRED` - **деньги возвращаются вручную через реальный платёжный канал**, система возврат не имитирует.
+* **Чек.** Создаётся в той же транзакции, где платёж становится `PAID`; снимок неизменяем (триггер). Без подключённого провайдера это **DEMO-чек без фискального признака и ОФД**, и он так и подписан; «QR» - иллюстрация, а не код проверки. Точка расширения - `FiscalReceiptProvider` (`receipts/fiscalProvider.ts`).
+* **Доступ.** Любой запрос к корзине/заказу/трекеру/чеку гостя требует секрет киоска (`X-Kiosk-Session-Token`, хранится как SHA-256). Клиентский JWT - отдельный секрет и тип; логин на общем мониторе привязан к сессии стола и умирает вместе с ней.
+
+## Тесты
 
 ```bash
-cd frontend
-./start_server.bat   # Windows; or `python3 -m http.server 8000` on macOS/Linux
+cd backend
+npm run test:unit                      # без БД: математика состава, кэшбэк, трекер, единицы, CORS …
+createdb restaurant_order_test
+export TEST_DATABASE_URL="postgresql://USER:PASS@localhost:5432/restaurant_order_test?schema=public"
+DATABASE_URL="$TEST_DATABASE_URL" npx prisma migrate deploy
+npm test                               # + интеграционные тесты на реальной БД
+npm run typecheck && npm run typecheck:tests
 ```
 
-Open `http://localhost:8000/monitor-select.html` — pick a table, and it'll
-carry you into `index.html?monitor=N`. On a real deployment each physical
-kiosk would just be bookmarked to its own `index.html?monitor=N` (ТЗ §1:
-one monitor is permanently wired to one table) and would never see the
-picker.
+Интеграционные тесты делают `TRUNCATE` всех таблиц, поэтому используют **только** `TEST_DATABASE_URL` и отказываются работать, если в имени базы нет `test`. Покрыто 106 тестами: сверка `schema.prisma` ↔ БД, оформление (точная математика резерва, гонка за последний остаток, идемпотентность, наличные/Kaspi, 21+, комментарий), кухня/официант/отмена (в т.ч. гонка «готовить» ↔ «отмена» с проверкой баланса склада), кэшбэк, аккаунты и секрет киоска, личный кабинет (история, оценка, повтор, проверка личности, доставка чеков, Telegram), чеки, меню/админка, сиды.
 
-Kitchen monitor: `http://localhost:8000/kitchen.html` (demo login `marat` / `chef123`)
-Waiter monitor: `http://localhost:8000/waiter.html` (demo login `aigerim` / `waiter123`)
-Admin panel: `http://localhost:8000/admin.html` (demo login `admin` / `admin123`)
+**Важно про проверку.** В среде, где разрабатывался релиз, CDN движков Prisma (`binaries.prisma.sh`) недоступен, поэтому: типы проверены под **Prisma 5.22** (как указано в `package.json`), а рантайм-тесты выполнялись на PostgreSQL 16 через Prisma 6.19 с драйвер-адаптером (идентичный код, отличается только `src/db/prisma.ts`). Прогоните `npm test` у себя на штатном Prisma 5 - это первое, что стоит сделать после распаковки. Браузерный слой дополнительно прогнан сценариями в jsdom против живого API (гость, клиент, персонал); в настоящих браузерах и на реальном железе (Arduino/RC522) он не запускался.
 
-If the backend isn't running on `localhost:4000`, set
-`window.RESTAURANT_API_BASE` before `api.js` loads on any page.
+## Безопасность и эксплуатация (production)
 
-## Schema
+* Секреты: `JWT_SECRET`, `CLIENT_JWT_SECRET` - разные, ≥ 32 символов (иначе сервер не стартует). Файлы `.env*` не коммитятся.
+* `KIOSK_DEVICE_SECRETS="1:…,2:…"` - обязательны: без секрета устройства терминал не откроет сессию. Откройте киоск один раз как `index.html?monitor=3&device=<секрет>`; `monitor-select.html` в продакшн-навигацию не включайте.
+* Включено автоматически: секрет киоска, отказ от демо-проверки личности, отсутствие паролей по умолчанию в `seed:reference` (первый админ создаётся только при `SEED_ADMIN_PASSWORD`), склад новых ингредиентов стартует с 0.
+* За обратным прокси задайте `TRUST_PROXY=1`. HTTPS обязателен (токены в заголовках).
+* Лимиты запросов и блокировка входа живут **в памяти процесса** - при нескольких экземплярах backend нужен общий стор (Redis) или лимиты на прокси.
+* Telegram: создайте бота, задайте `TELEGRAM_BOT_TOKEN/USERNAME/WEBHOOK_SECRET` и вызовите `setWebhook` на `https://<хост>/api/integrations/telegram/webhook` с тем же `secret_token`. E-mail: `SMTP_*`. Без настройки эндпоинты честно отвечают `503 DELIVERY_PROVIDER_NOT_CONFIGURED`.
 
-`prisma/schema.prisma` mirrors `Database - Лист1.pdf` field-for-field —
-same table names, same `VARCHAR(n)`-with-allowed-values-in-a-comment style
-for status columns (rather than native Postgres enums, since that's what
-the source spreadsheet used). A few things were added because the written
-business flow needs them and the ERD didn't have a place for them yet, each
-marked `// ADDED:` in the schema with its reasoning, in the same
-"Добавил / Почему" spirit the ТЗ itself uses:
+## Ограничения и решения по неоднозначностям
 
-1. **`cart_item_options`** — the ТЗ says a client picks dish options *when
-   adding to the cart* (§4), but the ERD only had `order_item_options`
-   (options are recorded once an order exists). Without this table a chosen
-   option couldn't survive from "add to cart" to checkout.
-2. **`inventory_reservations.order_item_id`** — the ERD only ties a
-   reservation to `order_id`. When one order has two items that need the
-   same ingredient, there's no way to tell which item's reservation to
-   release/consume when *that* item (not the whole order) starts cooking.
-   `order_id` is kept too, so it's additive, not a replacement.
-3. **`cart_items.notes` / `order_items.notes`** — the ТЗ says the chef
-   should be able to see "особенности приготовления" per dish; nothing
-   carried that text. Nullable, costs nothing if the frontend never sets it
-   (the current UI doesn't expose an input for it yet either — the field is
-   there for when it does).
-4. The ERD lists both a singular `cart` and a plural `carts` table with
-   identical columns — a leftover duplicate (`cart_items` itself points at
-   `Carts`). Only `carts` is modeled.
-5. **`orders.order_status = 'CANCELLED'`** — the ТЗ's pipeline never
-   describes cancelling a placed order, so this value wasn't in the
-   original enum (documented in `schema.prisma`'s comment, same as every
-   other status column — see above). The admin panel needs a way to void
-   an order (customer walked out, mistake, etc.), and `restaurant_sessions`
-   already has its own `CANCELLED` for the same reason. No migration
-   needed — the column is a plain `VARCHAR(30)`, not a native enum, so this
-   is a documentation/type-list change, not a schema change.
+1. **Входной DOCX («ТЗ ИС.docx») мне не передавали**, только `.md` и проект. Поэтому: список «представителей» для 20 категорий аллергенов составлен по общепринятым классификациям и вынесен в данные (`prisma/seed.data.ts` / админка) - сверьте с вашим перечнем со стр. 4–8; внешний вид чека (рис. стр. 13) и трекера (стр. 18–19) сделан по текстовому описанию в `.md`.
+2. **Фискализации нет.** Чек - DEMO; реальный ОФД/ККМ подключается через `FiscalReceiptProvider`.
+3. **Проверки личности (провайдера) нет.** Есть демо-режим (только вне production), без хранения документа: файл живёт во временном каталоге на время запроса.
+4. **E-mail не подтверждается, сброса пароля нет** - для реального использования это нужно добавить. Чек уходит только на адрес самой учётной записи.
+5. **Реального возврата денег нет** - только флаг `REFUND_REQUIRED` и корректировка бонусов.
+6. Количество опции считается **на порцию** (2 порции × «доп. бекон ×1» = 2 порции бекона) - это изменение смысла по ТЗ; цена опций масштабируется так же.
+7. Секрет киоска остаётся читаемым для трекера/чека `KIOSK_TOKEN_GRACE_MINUTES` (30) после завершения сессии, чтобы гость мог увидеть «Подан» и открыть чек; запись в корзину после завершения запрещена сразу.
+8. Чеки для заказов, оплаченных до релиза, строятся при первом просмотре из сохранённых данных и помечаются `legacySnapshot`; время этапов, которых не было в журнале, **не выдумывается**.
 
-## Business flow → code
+## Что было сломано в исходном проекте (исправлено)
 
-The ТЗ's numbered pipeline, and where each step lives:
+* Удаление позиции корзины с опцией, «Очистить» и сам `confirmCheckout` падали на FK (`ON DELETE RESTRICT`) - заказ с опцией оформить было нельзя.
+* Отменённый заказ можно было «оживить» через API кухни; экраны официанта и админа отдавали запись сотрудника **вместе с хэшем пароля**.
+* Резервирование читало остаток и писало отдельно (гонка двух столов), списание не было защищено от одновременных нажатий; админ мог выставить остаток ниже резерва.
+* Блюдо без рецепта считалось доступным; опции не умножались на количество порций.
+* Названия блюд/ингредиенты вставлялись в `innerHTML` без экранирования; `monitor-select.html` допускал открытое перенаправление через `?next=`.
+* `seed.ts` стирал данные; в архиве лежали `.env`, `.env.save`, `example.env` с учётными данными (в поставку не включены - **смените эти пароли/секреты, если они где-то использовались**).
 
-| # | Step | Endpoint / module |
-|---|------|--------------------|
-| 1 | Table/monitor pairing, session open | `POST /api/sessions/open` — `modules/sessions` |
-| 2 | Menu list, computed availability | `GET /api/menu` — `modules/menu`, `inventory.service.ts` |
-| 3 | Dish detail | `GET /api/menu/dishes/:id` |
-| 4 | Add to cart (+ options, `price_at_add` snapshot) | `POST /api/cart/:sessionId/items` — `modules/cart` |
-| 5 | Checkout validation | `GET /api/checkout/:sessionId/validate` — `modules/checkout` |
-| 6 | 21+ verification | `POST /api/age-verification` — `modules/ageVerification` |
-| 7–10 | Payment method → order created → ingredients reserved → sent to kitchen | `POST /api/checkout/:sessionId/confirm` (one transaction) |
-| 9–11 | Kitchen monitor, item status, ingredient consumption | `modules/kitchen` |
-| 12–13 | Waiter monitor, pickup, cash collection | `modules/waiter` |
-| 14 | Delivery, session complete, table freed | `PATCH /api/waiter/orders/:id/delivered` |
+## Структура
 
-Status enums (`order_status`, `order_item.status`, `payment_status`, …) and
-their allowed transitions live in `src/types/status.ts`, matching the
-values documented at the end of the ТЗ.
-
-## Admin panel
-
-`admin.html` (backend: `src/modules/admin`, mounted at `/api/admin/*`,
-gated to the `ADMIN` role only — unlike kitchen/waiter, this router doesn't
-accept `ADMIN` as a fallback for another role, since it's the one place
-that can rewrite the menu or void an order). Seven tabs:
-
-| Tab | What it does |
-|---|---|
-| Обзор | Free/occupied tables, active sessions, order counts by status, today's paid revenue, the 5 lowest-stock ingredients |
-| Столики | Create/rename tables, and a manual status override for unsticking a table (crashed kiosk, staff seated someone without opening a session) — forcing a table back to `FREE` while it has a live session cancels that session too, so they can't drift out of sync |
-| Заказы | Every order, any status (kitchen/waiter each only see their own slice) — filter by status, view full detail, **cancel** an order |
-| Меню | Categories and dishes — full editor including recipe lines, allergens, and available options, all as one form |
-| Склад | Ingredients + editable stock levels |
-| Опции и аллергены | Dish options (with their own ingredient cost) and allergens |
-| Сотрудники | Create/deactivate staff accounts, change role, reset a password |
-
-A few decisions specific to this part:
-
-- **No hard delete, anywhere in the admin panel.** Categories, dishes,
-  ingredients, options, allergens, and staff can all be referenced by past
-  orders (`ON DELETE RESTRICT` throughout the schema) — deleting one with
-  any history would fail, or worse, silently corrupt that history if the
-  constraint ever changed. Every "remove" action is really "deactivate"
-  (`isActive = false`, or for staff, the existing `is_active` column),
-  which is also just how a real restaurant works — you 86 a dish, you
-  don't erase that it was ever sold. Tables are the one exception where a
-  genuine `DELETE` is exposed (`DELETE /api/admin/tables/:id`), but it's
-  still blocked the same way if the table has any order/session history —
-  it only succeeds for a table that was created and never used.
-- **Order cancellation releases reservations, not consumption.** Cancelling
-  an order releases any ingredients still in `RESERVED` state back to free
-  stock. Anything already `CONSUMED` (the kitchen had started on it) stays
-  consumed — that food is made and can't be un-made. Cancelling also runs
-  the same "was this the session's last order?" check delivery uses, so a
-  cancelled last order still frees the table.
-- **`reserved_quantity` isn't admin-editable.** Only `stock_quantity` (what
-  a physical inventory count or a delivery would change) can be set by
-  hand; `reserved_quantity` is only ever written by the
-  checkout/kitchen reservation flow, and letting an admin hand-edit it
-  would let it drift out of sync with the reservation rows it's supposed
-  to sum to.
-
-## Decisions made where the ТЗ was ambiguous
-
-- **Age verification UI**: the ТЗ says a waiter walks over and confirms —
-  it doesn't say *how* that reaches the system (payment explicitly says
-  "card tap"; age verification doesn't). Implemented as the waiter entering
-  their own login/password directly on the table's monitor
-  (`POST /api/age-verification`), so `verified_by` is a real authenticated
-  staff member rather than a client self-attestation — the client-facing
-  build previously had "Мне есть 21 год" / "Мне нет 21 года" buttons the
-  *client* clicked, which the ТЗ explicitly says shouldn't be trusted. That
-  self-attestation UI was replaced; this is the one place I'd call the
-  frontend change load-bearing rather than cosmetic. One verified check
-  covers the rest of that session (ТЗ: "проверка относится к сессии"), not
-  one check per order.
-- **Payment method naming**: the ТЗ's only non-cash method is `KASPI_QR`.
-  The existing frontend instead simulates a bank-card tap over Web Serial to
-  a real Arduino + RC522 (`arduino/rc522_payment.ino` — genuine hardware
-  integration, not decorative, so it was kept exactly as built). A
-  successful tap now calls the backend with `paymentMethod: 'KASPI_QR'`; a
-  declined tap never calls the backend at all, matching the ТЗ's Kaspi flow
-  having no described failure branch. If you actually want a distinct `CARD`
-  method recorded separately from `KASPI_QR`, that's a small schema/enum
-  change away.
-- **Cart lifecycle**: `carts.session_id` is `UNIQUE`, so a session has one
-  persistent cart across however many orders it places (the ТЗ implies
-  multiple orders per session: "если это был последний активный заказ
-  сессии…"). "Cart marked CONVERTED" is implemented as clear-and-reset-to-
-  `ACTIVE` rather than a dead end, so a second round of ordering in the same
-  visit works.
-- **Delivery requires payment settled**: the ТЗ doesn't explicitly forbid
-  marking an order DELIVERED before cash is collected, but it also doesn't
-  describe handing over food that hasn't been paid for. `markDelivered`
-  enforces `payment_status === PAID` first — flagged in
-  `waiter.service.ts` as an inferred rule, not a directly stated one.
-- **Local dev table picker** (`monitor-select.html`): not part of the ТЗ —
-  added purely so the client flow is testable without six physical kiosks.
-  A real deployment never sees it.
-
-## Not built
-
-Kept in scope to what the ТЗ actually describes:
-
-- **Real-time push** — kitchen/waiter monitors poll every 5s rather than
-  using WebSockets/SSE. Simple, works, and the ТЗ doesn't ask for
-  sub-second updates; swapping in a push channel later wouldn't touch the
-  business logic, only how `GET /orders` results reach the screen.
-- **Item-level cancellation** — the admin panel cancels a whole order; the
-  ТЗ never describes voiding a single dish out of an in-progress order, so
-  there's no endpoint for that narrower case.
-
-## Demo data
-
-`npm run seed` creates:
-
-- Staff: `admin`/`admin123` (ADMIN), `aigerim`/`waiter123` (WAITER), `marat`/`chef123` (CHEF)
-- 6 tables, monitor numbers 1–6, all `FREE`
-- The same 6 categories / 18 dishes the old frontend had hardcoded, now with
-  real recipes/ingredients/inventory behind them, plus 3 dish options and 8 allergens
+```
+backend/  prisma/{schema.prisma, migrations/, seed.reference.ts, seed.demo.ts, seed.data.ts}
+          src/modules/{menu,cart,checkout,sessions,kitchen,waiter,admin,orderTracking,
+                       clientAuth,clientAccount,loyalty,identity,receipts,integrations,…}
+          src/{lib,middleware,config,db,scripts}/  tests/{unit,integration,helpers}/
+frontend/ index/cart (меню, корзина) · account/orders/profile (кабинет) · kitchen · waiter · admin
+          api.js session.js client-auth.js ui.js receipt.js tracker.js script.js …
+docs/     API_v2.md  README_v1_original.md
+```

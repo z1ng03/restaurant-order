@@ -2,6 +2,10 @@
  * Base class for errors that should be turned into a specific HTTP response
  * rather than a generic 500. Route handlers throw these; the error
  * middleware in `middleware/error.middleware.ts` catches and formats them.
+ *
+ * `code` is the STABLE machine-readable part of the contract (the frontend
+ * switches on it); `message` is human text shown to the user (Russian for the
+ * guest/client-facing flows).
  */
 export class AppError extends Error {
   readonly status: number;
@@ -55,7 +59,7 @@ export class ForbiddenError extends AppError {
  */
 export class CheckoutValidationError extends AppError {
   constructor(issues: CheckoutIssue[]) {
-    super(409, "CHECKOUT_VALIDATION_FAILED", "The cart is not ready to be ordered", { issues });
+    super(409, "CHECKOUT_VALIDATION_FAILED", "Корзину нельзя оформить - проверьте отмеченные позиции", { issues });
   }
 }
 
@@ -64,10 +68,20 @@ export interface CheckoutIssue {
     | "EMPTY_CART"
     | "DISH_UNAVAILABLE"
     | "DISH_INACTIVE"
+    | "INGREDIENT_INACTIVE"
     | "INSUFFICIENT_INGREDIENTS"
     | "SESSION_NOT_ACTIVE"
-    | "AGE_VERIFICATION_REQUIRED";
+    | "AGE_VERIFICATION_REQUIRED"
+    | "PRICE_CONFIRMATION_REQUIRED"
+    | "ZERO_TOTAL";
   cartItemId?: string;
+  /** Every cart line affected (an ingredient shortage usually spans several lines). */
+  cartItemIds?: string[];
   dishName?: string;
+  ingredientId?: string;
+  ingredientName?: string;
+  unit?: string;
+  needed?: string;
+  free?: string;
   message: string;
 }

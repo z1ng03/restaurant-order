@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="account.css">
+</head>
+<body class="account-body">
+    <main class="account-page">
+        <header class="account-header">
+            <div>
+                <p class="eyebrow">Restaurant</p>
+                <h1>Личный кабинет</h1>
+            </div>
+            <nav class="account-nav" aria-label="Навигация">
+                <a href="index.html">← В меню</a>
+                <a href="cart.html">Корзина</a>
+            </nav>
+        </header>
+
+        <!-- Гость не вошёл: вход и регистрация -->
+        <section class="account-card auth-card" id="auth-section" hidden>
+            <div class="tab-row" role="tablist" aria-label="Вход или регистрация">
+                <button type="button" role="tab" id="tab-login" aria-selected="true" aria-controls="login-form">Вход</button>
+                <button type="button" role="tab" id="tab-register" aria-selected="false" aria-controls="register-form">Регистрация</button>
+            </div>
+
+            <form id="login-form" novalidate>
+                <p class="form-error" id="login-error" role="alert" hidden></p>
+                <div class="form-field">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" autocomplete="email" required>
+                </div>
+                <div class="form-field">
+                    <label for="login-password">Пароль</label>
+                    <input type="password" id="login-password" autocomplete="current-password" required>
+                </div>
+                <button class="primary-action" id="login-submit" type="submit">Войти</button>
+            </form>
+
+            <form id="register-form" novalidate hidden>
+                <p class="form-error" id="register-error" role="alert" hidden></p>
+                <div class="form-field">
+                    <label for="register-name">Имя</label>
+                    <input type="text" id="register-name" autocomplete="name" maxlength="100" required>
+                </div>
+                <div class="form-field">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" autocomplete="email" required>
+                </div>
+                <div class="form-field">
+                    <label for="register-password">Пароль</label>
+                    <input type="password" id="register-password" autocomplete="new-password" minlength="8" required>
+                    <span class="form-hint">Не менее 8 символов.</span>
+                </div>
+                <div class="form-field">
+                    <label for="register-password2">Повторите пароль</label>
+                    <input type="password" id="register-password2" autocomplete="new-password" required>
+                </div>
+                <button class="primary-action" id="register-submit" type="submit">Зарегистрироваться</button>
+            </form>
+            <p class="form-hint" style="margin-top:14px">Аккаунт не обязателен: заказывать можно и без него. Вход нужен, чтобы копить и тратить кэшбэк, видеть историю заказов и получать чеки.</p>
+        </section>
+
+        <!-- Гость вошёл: две строки «текст + кнопка-иконка» -->
+        <section class="account-card" id="home-section" hidden>
+            <h2 id="home-greeting">Здравствуйте!</h2>
+            <p>Ваш кэшбэк: <span class="balance-pill" id="home-balance">…</span></p>
+
+            <div class="home-row">
+                <p>Посмотрите вашу историю заказов!</p>
+                <a class="icon-btn" href="orders.html" aria-label="История заказов" title="История заказов"><img src="images/history.svg" alt=""></a>
+            </div>
+            <div class="home-row">
+                <p>Посмотрите ваш профиль!</p>
+                <a class="icon-btn" href="profile.html" aria-label="Профиль" title="Профиль"><img src="images/person.svg" alt=""></a>
+            </div>
+
+            <div class="inline-actions" style="margin-top:12px">
+                <button class="secondary-action" id="logout-btn" type="button">Выйти из аккаунта</button>
+                <span class="form-hint">За общим монитором обязательно выходите: данные не должны остаться следующему гостю.</span>
+            </div>
+        </section>
+    </main>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="api.js"></script>
+    <script src="ui.js"></script>
+    <script src="client-auth.js"></script>
+    <script src="session.js"></script>
+    <script src="account.js"></script>
+</body>
+</html>

@@ -26,16 +26,44 @@
             <section class="products" id="products" aria-live="polite"></section>
         </main>
 
-        <a class="cart-link" href="cart.html" aria-label="Открыть корзину">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M3 3h2l2.4 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.6L21 7H6M10 20a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm9 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/>
-            </svg>
-            <span class="cart-label">Корзина</span>
-            <span class="cart-badge" id="cart-count">0</span>
-        </a>
+        <div class="menu-side-actions">
+            <a class="cart-link" href="cart.html" aria-label="Открыть корзину">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 3h2l2.4 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.6L21 7H6M10 20a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm9 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/>
+                </svg>
+                <span class="cart-label">Корзина</span>
+                <span class="cart-badge" id="cart-count">0</span>
+            </a>
+            <!-- Личный кабинет: ровно под корзиной, тот же размер и оформление -->
+            <a class="account-link" id="account-link" href="account.html" aria-label="Личный кабинет" title="Личный кабинет">
+                <img src="images/person.svg" alt="">
+            </a>
+        </div>
+
+        <!-- Статус заказа: левее кнопки корзины (скрыт, пока у стола нет заказов) -->
+        <button class="order-tracker" id="order-tracker" type="button" hidden aria-haspopup="dialog">
+            <span class="tracker-dot" aria-hidden="true"></span>
+            <span class="tracker-text">
+                <strong class="tracker-title">Мой заказ</strong>
+                <small class="tracker-sub"></small>
+            </span>
+        </button>
     </div>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <div class="checkout-modal" id="tracker-modal" hidden>
+        <div class="modal-card tracker-modal-card" role="dialog" aria-modal="true" aria-labelledby="tracker-title">
+            <button class="modal-close" id="tracker-close-btn" type="button" aria-label="Закрыть статус заказа">×</button>
+            <p class="eyebrow">Статус заказа</p>
+            <h2 id="tracker-title">Заказ</h2>
+            <p id="tracker-subtitle" style="margin:0 0 10px"></p>
+            <div class="tracker-orders" id="tracker-orders"></div>
+            <ol class="tracker-steps" id="tracker-steps"></ol>
+            <div class="tracker-cancelled" id="tracker-cancelled" hidden></div>
+            <button class="secondary-btn" id="tracker-receipt-btn" type="button" hidden style="margin-top:14px;width:100%">Показать чек</button>
+        </div>
+    </div>
 
     <div class="dish-modal" id="dish-modal" hidden>
         <div class="dish-modal-card" role="dialog" aria-modal="true" aria-labelledby="dish-modal-title">
@@ -51,8 +79,11 @@
                 <p class="dish-description" id="dish-description"></p>
 
                 <section class="dish-info-section">
-                    <h3>Состав</h3>
-                    <p id="dish-ingredients"></p>
+                    <div class="composition-head">
+                        <h3>Состав на 1 порцию</h3>
+                        <button class="link-btn" id="composition-reset" type="button" hidden>Вернуть по рецепту</button>
+                    </div>
+                    <ul class="ingredient-list" id="dish-ingredients"></ul>
                 </section>
 
                 <section class="dish-info-section" id="dish-options-section" hidden>
@@ -63,12 +94,14 @@
                 <section class="allergy-warning" id="dish-allergy-section" hidden>
                     <span class="warning-icon" aria-hidden="true">!</span>
                     <div>
-                        <h3>Возможные аллергены</h3>
-                        <p id="dish-allergens"></p>
+                        <h3>Аллергены в выбранном составе</h3>
+                        <ul class="allergen-groups" id="dish-allergen-groups"></ul>
+                        <p class="allergen-note" id="dish-allergen-manual" hidden></p>
                     </div>
                 </section>
 
-                <p class="unavailable-note" id="dish-unavailable-note" hidden>Сейчас недостаточно ингредиентов для этого блюда.</p>
+                <p class="config-note" id="dish-config-note" role="status" aria-live="polite" hidden></p>
+                <p class="unavailable-note" id="dish-unavailable-note" hidden></p>
 
                 <div class="dish-modal-footer">
                     <strong class="dish-modal-price" id="dish-modal-price"></strong>
@@ -79,7 +112,11 @@
     </div>
 
     <script src="api.js"></script>
+    <script src="ui.js"></script>
+    <script src="client-auth.js"></script>
     <script src="session.js"></script>
+    <script src="receipt.js"></script>
+    <script src="tracker.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

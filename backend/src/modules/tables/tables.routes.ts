@@ -8,7 +8,7 @@ export const tablesRouter = Router();
 /**
  * Lists every physical table. Used by the local dev "pick a table" screen
  * (see frontend/monitor-select.html) so the client app can be exercised
- * without six physical kiosks — in production each monitor would instead
+ * without six physical kiosks - in production each monitor would instead
  * be configured once with its own `?monitor=N` URL and never call this.
  */
 tablesRouter.get(

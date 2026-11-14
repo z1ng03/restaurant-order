@@ -34,7 +34,7 @@ kitchenRouter.patch(
   asyncHandler(async (req, res) => {
     const orderItemId = parseIdParam(req.params.orderItemId, "orderItemId");
     const { status } = statusSchema.parse(req.body);
-    const order = await kitchenService.updateOrderItemStatus(orderItemId, status);
+    const order = await kitchenService.updateOrderItemStatus(orderItemId, status, req.staff ? BigInt(req.staff.userId) : null);
     res.json({ order });
   }),
 );

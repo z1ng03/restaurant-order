@@ -3,7 +3,7 @@
 //   site -> START_PAYMENT | CANCEL_PAYMENT
 //   Arduino -> READER_READY | WAITING_FOR_CARD | CARD_UID:.. |
 //              PAYMENT_APPROVED | PAYMENT_DECLINED | PAYMENT_CANCELLED
-// Only available in Chromium-based browsers (Chrome/Edge) — README.txt
+// Only available in Chromium-based browsers (Chrome/Edge) - README.txt
 // already tells the person to use one of those.
 
 class SerialPayment {
@@ -52,7 +52,7 @@ class SerialPayment {
         }
       }
     } catch {
-      // Port went away mid-read (unplugged, etc.) — treat like a disconnect.
+      // Port went away mid-read (unplugged, etc.) - treat like a disconnect.
     }
     this.onDisconnect?.();
   }

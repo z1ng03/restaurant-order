@@ -52,49 +52,62 @@ function renderOrderCard(order, token) {
   card.className = "staff-order-card";
   const payment = order.payments[0];
   const isPaid = order.paymentStatus === "PAID";
+  const isCash = payment?.method === "CASH";
 
   const itemLines = order.items
     .map((item) => {
-      const opts = item.options.map((o) => o.option.name).join(", ");
-      return `${item.dish.name} × ${item.quantity}${opts ? ` (${opts})` : ""}`;
+      const opts = item.options.map((o) => escapeHtml(o.option.name)).join(", ");
+      return `${escapeHtml(item.dish.name)} × ${item.quantity}${opts ? ` (${opts})` : ""}`;
     })
     .join("; ");
+
+  // What the guest owes in MONEY: the order total minus bonuses already spent on it.
+  const bonus = Number(order.discountBonus ?? 0);
+  const toPay = payment ? formatMoney(payment.amount) : formatMoney(order.payableTotal);
+  const payLine = isPaid
+    ? `Оплачено: ${escapeHtml(toPay)}${bonus > 0 ? ` (+ бонусами ${escapeHtml(formatMoney(bonus))})` : ""}`
+    : isCash
+      ? `<strong>Принять наличными: ${escapeHtml(toPay)}</strong>${bonus > 0 ? ` (сумма заказа ${escapeHtml(formatMoney(order.subtotal))}, бонусами оплачено ${escapeHtml(formatMoney(bonus))})` : ""}`
+      : "";
 
   card.innerHTML = `
     <div class="staff-order-header">
       <div>
-        <strong>Заказ №${order.orderId}</strong>
-        <span class="staff-order-meta">Столик №${order.table.tableNumber} · ${timeSince(order.createdAt)}</span>
+        <strong>Заказ №${escapeHtml(order.orderId)}</strong>
+        <span class="staff-order-meta">Столик №${escapeHtml(order.table.tableNumber)} · ${escapeHtml(timeSince(order.createdAt))}</span>
       </div>
       <span class="staff-status-badge ${isPaid ? "staff-badge-paid" : "staff-badge-waiting"}">
-        ${isPaid ? "Оплачено" : payment?.method === "CASH" ? "Ожидает наличные" : "Ожидает оплату"}
+        ${isPaid ? "Оплачено" : isCash ? "Ожидает наличные" : "Ожидает оплату"}
       </span>
     </div>
     <p class="staff-item-sub">${itemLines}</p>
-    <p class="staff-order-status">Статус заказа: <strong>${orderStatusLabel(order.orderStatus)}</strong></p>
+    ${order.comment ? `<p class="staff-order-comment"><strong>Комментарий гостя:</strong> ${escapeHtml(order.comment)}</p>` : ""}
+    ${payLine ? `<p class="staff-item-sub">${payLine}</p>` : ""}
+    <p class="staff-order-status">Статус заказа: <strong>${escapeHtml(orderStatusLabel(order.orderStatus))}</strong></p>
     <div class="staff-order-actions"></div>
   `;
 
   const actions = card.querySelector(".staff-order-actions");
+  const staffToken = () => getStaffSession().token;
 
   if (order.orderStatus === "READY_FOR_DELIVERY") {
     actions.appendChild(makeActionButton("Нести заказ", async () => {
-      await api.patch(`/waiter/orders/${order.orderId}/pickup`, {}, { token });
-      await loadOrders(token);
+      await api.patch(`/waiter/orders/${order.orderId}/pickup`, {}, { token: staffToken() });
+      await loadOrders(staffToken());
     }));
   }
 
   if (order.orderStatus === "OUT_FOR_DELIVERY") {
-    if (!isPaid && payment?.method === "CASH") {
+    if (!isPaid && isCash) {
       actions.appendChild(makeActionButton("Наличные получены", async () => {
-        await api.patch(`/waiter/orders/${order.orderId}/cash-received`, {}, { token });
-        await loadOrders(token);
+        await api.patch(`/waiter/orders/${order.orderId}/cash-received`, {}, { token: staffToken() });
+        await loadOrders(staffToken());
       }));
     }
 
     const deliverBtn = makeActionButton("Заказ выдан", async () => {
-      await api.patch(`/waiter/orders/${order.orderId}/delivered`, {}, { token });
-      await loadOrders(token);
+      await api.patch(`/waiter/orders/${order.orderId}/delivered`, {}, { token: staffToken() });
+      await loadOrders(staffToken());
     });
     if (!isPaid) {
       deliverBtn.disabled = true;

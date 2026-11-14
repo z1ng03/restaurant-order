@@ -43,13 +43,44 @@
 
             <aside class="order-summary">
                 <h2>Ваш заказ</h2>
-                <div class="summary-line">
-                    <span>Количество блюд</span>
-                    <strong id="summary-count">0</strong>
+
+                <!-- Новые цены после «Заказать ещё раз»: заказ нельзя оформить, пока гость не подтвердит итог -->
+                <div class="price-banner" id="price-banner" role="alert" hidden>
+                    <strong>Цены изменились с прошлого заказа</strong>
+                    <ul id="price-banner-list"></ul>
+                    <button class="order-btn" id="price-confirm-btn" type="button">Подтвердить новую сумму</button>
                 </div>
-                <div class="summary-line summary-total">
-                    <span>Итого</span>
-                    <strong id="summary-total">0 ₸</strong>
+
+                <div class="order-extras">
+                    <div class="order-comment">
+                        <label for="order-comment">Комментарий для шефа и официанта</label>
+                        <textarea id="order-comment" maxlength="500" placeholder="Например: без соли, соус отдельно" aria-describedby="comment-counter"></textarea>
+                        <span class="comment-counter" id="comment-counter">0 / 500</span>
+                    </div>
+
+                    <div class="cashback-box" id="cashback-box">
+                        <label for="cashback-checkbox" id="cashback-title">Кэшбэк</label>
+                        <div id="cashback-body"></div>
+                    </div>
+                </div>
+
+                <div class="summary-lines">
+                    <div class="summary-line">
+                        <span>Количество блюд</span>
+                        <strong id="summary-count">0</strong>
+                    </div>
+                    <div class="summary-line">
+                        <span>Сумма заказа</span>
+                        <strong id="summary-subtotal">0 ₸</strong>
+                    </div>
+                    <div class="summary-line discount" id="summary-discount-line" hidden>
+                        <span>Кэшбэк</span>
+                        <strong id="summary-discount">−0 ₸</strong>
+                    </div>
+                    <div class="summary-line summary-total">
+                        <span>К оплате</span>
+                        <strong id="summary-total">0 ₸</strong>
+                    </div>
                 </div>
                 <p class="checkout-issues" id="checkout-issues" hidden></p>
                 <button class="order-btn" id="order-btn" type="button">Заказать</button>
@@ -76,7 +107,7 @@
         <div class="modal-card age-modal-card" role="dialog" aria-modal="true" aria-labelledby="age-modal-title">
             <div class="age-mark">21+</div>
             <h2 id="age-modal-title">Требуется подтверждение возраста</h2>
-            <p>В заказе есть алкоголь или кальян. Позовите официанта — он проверит документ и подтвердит здесь.</p>
+            <p>В заказе есть алкоголь или кальян. Позовите официанта - он проверит документ и подтвердит здесь.</p>
             <form id="age-form" class="age-form">
                 <label>Логин официанта
                     <input type="text" id="waiter-login" name="waiterLogin" autocomplete="username" required>
@@ -91,6 +122,7 @@
                 </div>
             </form>
             <small>Для входа используйте свой логин официанта (например, aigerim / waiter123 в демо-данных).</small>
+            <small id="age-account-hint" hidden>Возраст можно подтвердить и без официанта: пройдите проверку личности в <a href="profile.html#identity" style="color:var(--accent)">личном кабинете</a>.</small>
         </div>
     </div>
 
@@ -148,13 +180,17 @@
             <div class="result-mark" id="result-mark">✓</div>
             <h2 id="result-title">Оплата прошла</h2>
             <p id="result-message"></p>
+            <button class="order-btn modal-button" id="result-receipt-btn" type="button" hidden>Показать чек</button>
             <button class="order-btn modal-button" id="result-primary-btn" type="button">Вернуться в меню</button>
             <button class="secondary-btn full-width-btn" id="result-close-btn" type="button">Закрыть</button>
         </div>
     </div>
 
     <script src="api.js"></script>
+    <script src="ui.js"></script>
+    <script src="client-auth.js"></script>
     <script src="session.js"></script>
+    <script src="receipt.js"></script>
     <script src="serial-payment.js"></script>
     <script src="script.js"></script>
 </body>

@@ -1,0 +1,6 @@
+{
+  // Type-checks the tests and the seeds as well (tsconfig.json only covers src/, which is what gets built).
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "noEmit": true, "rootDir": "." },
+  "include": ["src/**/*.ts", "tests/**/*.ts", "prisma/**/*.ts", "vitest.config.ts"]
+}

@@ -1,6 +1,6 @@
 import { prisma } from "../../db/prisma";
 import { ConflictError, NotFoundError, ValidationError } from "../../lib/errors";
-import { closeSessionIfNoActiveOrders } from "../sessions/sessions.service";
+import { sessionPublicSelect } from "../sessions/sessions.service";
 import type { TableStatus } from "../../types/status";
 
 const tableWithSessionInclude = {
@@ -8,6 +8,7 @@ const tableWithSessionInclude = {
     where: { status: "ACTIVE" as const },
     take: 1,
     orderBy: { createdAt: "desc" as const },
+    select: sessionPublicSelect, // never the kiosk secret hash
   },
 };
 
@@ -42,12 +43,12 @@ export async function updateTable(tableId: bigint, input: { tableNumber?: number
 }
 
 /**
- * Manual admin override — mainly for unsticking a table that's stuck
+ * Manual admin override - mainly for unsticking a table that's stuck
  * OCCUPIED (crashed kiosk, staff seated someone without opening a session,
  * etc.). Forcing a table back to FREE while it has a live session cancels
  * that session too, so the two never drift out of sync; forcing it to
  * OCCUPIED with no session is allowed as a plain "block this table" flag
- * (e.g. reserved, or physically out of service) — it doesn't fabricate a
+ * (e.g. reserved, or physically out of service) - it doesn't fabricate a
  * session for it.
  */
 export async function setTableStatus(tableId: bigint, status: TableStatus) {
@@ -60,9 +61,15 @@ export async function setTableStatus(tableId: bigint, status: TableStatus) {
   if (status === "FREE" && table.sessions[0]) {
     const session = table.sessions[0];
     await prisma.$transaction(async (tx) => {
+      const now = new Date();
       await tx.restaurantSession.update({
         where: { sessionId: session.sessionId },
-        data: { status: "CANCELLED", completedAt: new Date() },
+        // the kiosk secret is dropped at once: an admin override ends the terminal's access immediately
+        data: { status: "CANCELLED", completedAt: now, kioskTokenHash: null },
+      });
+      await tx.clientAuthSession.updateMany({
+        where: { kioskSessionId: session.sessionId, revokedAt: null },
+        data: { revokedAt: now },
       });
       await tx.restaurantTable.update({ where: { tableId }, data: { status: "FREE" } });
     });
@@ -79,12 +86,12 @@ export async function deleteTable(tableId: bigint) {
   });
   if (!table) throw new NotFoundError("Table");
   if (table.sessions[0]) {
-    throw new ConflictError("Can't delete a table with an active session — free it first");
+    throw new ConflictError("Can't delete a table with an active session - free it first");
   }
   try {
     await prisma.restaurantTable.delete({ where: { tableId } });
   } catch {
     // FK RESTRICT from restaurant_sessions/orders referencing this table's history.
-    throw new ValidationError("This table has order history and can't be deleted — it can still be edited");
+    throw new ValidationError("This table has order history and can't be deleted - it can still be edited");
   }
 }

@@ -12,7 +12,7 @@ const userListSelect = {
   createdAt: true,
 } as const;
 
-/** Never returns passwordHash — this is the one place staff accounts are listed for management. */
+/** Never returns passwordHash - this is the one place staff accounts are listed for management. */
 export function listUsers() {
   return prisma.user.findMany({ orderBy: { name: "asc" }, select: userListSelect });
 }
@@ -39,7 +39,7 @@ export interface UpdateUserInput {
 /**
  * No hard delete: users.user_id is referenced by orders.waiter_id,
  * payments.paid_by and age_verifications.verified_by (ON DELETE RESTRICT
- * on the first, SET NULL / required on the others) — deleting a staff
+ * on the first, SET NULL / required on the others) - deleting a staff
  * member with any history would either fail or erase who did what.
  * `isActive = false` is how a departed employee is handled; their login
  * stops working (auth.service.ts checks isActive) but past orders/payments

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="account.css">
+</head>
+<body class="account-body">
+    <main class="account-page">
+        <header class="account-header">
+            <div>
+                <p class="eyebrow">Личный кабинет</p>
+                <h1>Профиль</h1>
+            </div>
+            <nav class="account-nav" aria-label="Навигация">
+                <a href="account.html">← Кабинет</a>
+                <a href="index.html">Меню</a>
+                <a href="orders.html">История заказов</a>
+            </nav>
+        </header>
+
+        <section class="account-card" aria-labelledby="p-title">
+            <h2 id="p-title">Данные</h2>
+            <dl class="detail-grid">
+                <dt>Имя</dt><dd id="p-name">…</dd>
+                <dt>Email</dt><dd id="p-email">…</dd>
+                <dt>Регистрация</dt><dd id="p-since">…</dd>
+                <dt>Кэшбэк</dt><dd><span class="balance-pill" id="p-balance">…</span></dd>
+            </dl>
+            <p class="form-hint" id="p-rules"></p>
+            <h3>Операции с бонусами</h3>
+            <ul class="ledger-list" id="ledger"></ul>
+            <p class="muted" id="ledger-empty" hidden>Операций пока нет.</p>
+            <button class="secondary-action" id="ledger-more" type="button" hidden>Показать ещё</button>
+        </section>
+
+        <section class="account-card" id="identity" aria-labelledby="id-title">
+            <h2 id="id-title">Проверка личности (21+)</h2>
+            <p>Статус: <span class="status-badge" id="id-badge">…</span></p>
+            <p class="form-hint" id="id-text"></p>
+            <p class="form-error" id="id-error" role="alert" hidden></p>
+            <div id="id-form" hidden>
+                <div class="form-field">
+                    <label for="id-file">Фото или скан документа (JPEG, PNG или PDF, до 3 МБ)</label>
+                    <input type="file" id="id-file" accept="image/jpeg,image/png,application/pdf">
+                    <span class="form-hint">Файл используется только для проверки и не сохраняется на сервере.</span>
+                </div>
+                <button class="secondary-action" id="id-submit" type="button">Отправить на проверку</button>
+            </div>
+            <div class="inline-actions" id="id-demo" hidden>
+                <button class="secondary-action" id="id-confirm" type="button">Подтвердить (демо)</button>
+                <span class="form-hint">Демонстрационный режим: настоящая проверка не выполняется.</span>
+            </div>
+        </section>
+
+        <section class="account-card" aria-labelledby="tg-title">
+            <h2 id="tg-title">Telegram для чеков</h2>
+            <p id="tg-status" class="muted">…</p>
+            <p class="form-error" id="tg-error" role="alert" hidden></p>
+            <div class="inline-actions">
+                <button class="secondary-action" id="tg-link" type="button">Привязать Telegram</button>
+                <a class="secondary-action" id="tg-open" href="#" target="_blank" rel="noopener" hidden style="text-decoration:none;line-height:26px">Открыть Telegram</a>
+                <button class="secondary-action" id="tg-unlink" type="button" hidden>Отвязать</button>
+            </div>
+            <p class="form-hint" id="tg-hint" hidden>Откройте ссылку и нажмите «Start» в боте - привязка подтвердится автоматически.</p>
+        </section>
+
+        <section class="account-card" aria-labelledby="pw-title">
+            <h2 id="pw-title">Смена пароля</h2>
+            <form id="pw-form" novalidate>
+                <p class="form-error" id="pw-error" role="alert" hidden></p>
+                <div class="form-field"><label for="pw-old">Текущий пароль</label><input type="password" id="pw-old" autocomplete="current-password" required></div>
+                <div class="form-field"><label for="pw-new">Новый пароль</label><input type="password" id="pw-new" autocomplete="new-password" minlength="8" required><span class="form-hint">Не менее 8 символов. После смены нужно будет войти заново.</span></div>
+                <div class="form-field"><label for="pw-new2">Повторите новый пароль</label><input type="password" id="pw-new2" autocomplete="new-password" required></div>
+                <button class="secondary-action" id="pw-submit" type="submit">Сменить пароль</button>
+            </form>
+        </section>
+
+        <section class="account-card danger-zone" aria-labelledby="del-title">
+            <h2 id="del-title">Удаление аккаунта</h2>
+            <p class="form-hint">Аккаунт и ваши персональные данные будут удалены без возможности восстановления; неиспользованные бонусы сгорят. Сведения о заказах и чеках сохраняются без привязки к вам.</p>
+            <p class="form-error" id="del-error" role="alert" hidden></p>
+            <form id="del-form" novalidate>
+                <div class="form-field"><label for="del-password">Пароль для подтверждения</label><input type="password" id="del-password" autocomplete="current-password" required></div>
+                <div class="form-field"><label><input type="checkbox" id="del-confirm"> Я понимаю, что это необратимо</label></div>
+                <button class="danger-action" id="del-submit" type="submit">Удалить аккаунт</button>
+            </form>
+        </section>
+    </main>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="api.js"></script>
+    <script src="ui.js"></script>
+    <script src="client-auth.js"></script>
+    <script src="session.js"></script>
+    <script src="profile.js"></script>
+</body>
+</html>

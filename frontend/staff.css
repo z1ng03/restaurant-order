@@ -214,3 +214,47 @@
     opacity: 0.5;
     transform: none !important;
 }
+
+/* TZ v2: комментарий к заказу и фактический состав */
+.staff-order-comment {
+    margin: 10px 0 0;
+    padding: 10px 12px;
+    border: 1px solid var(--accent);
+    border-radius: 9px;
+    background: rgba(240, 178, 74, 0.14);
+    line-height: 1.4;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.staff-changes {
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+    line-height: 1.5;
+}
+
+.staff-changes li {
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.staff-changes .change-removed {
+    background: rgba(168, 61, 61, 0.28);
+    color: #ffd0d0;
+    font-weight: 700;
+}
+
+.staff-changes .change-changed {
+    background: rgba(240, 178, 74, 0.2);
+    font-weight: 700;
+}
+
+.staff-changes .change-added {
+    background: rgba(88, 179, 104, 0.22);
+    font-weight: 700;
+}
+
+.staff-legacy {
+    color: #e6c78a;
+}
