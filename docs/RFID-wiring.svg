@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1050" viewBox="0 0 1200 1050">
+<rect width="1200" height="1050" fill="#f3f6fb"/>
+<style>text{font-family:Arial,sans-serif;fill:#18283e}.title{font-size:30px;font-weight:700}.sub{font-size:18px}.label{font-size:20px;font-weight:700}.pin{font-size:18px}.small{font-size:16px}.wire{fill:none;stroke-width:3}</style>
+<text x="45" y="55" class="title">Restaurant Order · схема подключения</text>
+<text x="45" y="87" class="sub">Arduino Uno • RFID-RC522 V1.33 • RGB • пищалка</text>
+<rect x="45" y="110" width="1110" height="52" rx="10" fill="#fff0cf"/>
+<text x="65" y="143" class="sub">Перед изменением проводов отключите USB. Питание RC522 — только 3.3V.</text>
+<rect x="50" y="200" width="250" height="625" rx="18" fill="#d9eef0" stroke="#197b86" stroke-width="2"/>
+<text x="85" y="242" class="label">ARDUINO UNO</text>
+<rect x="485" y="265" width="240" height="245" rx="12" fill="#fff" stroke="#788aa7" stroke-width="2"/>
+<text x="510" y="295" class="label">Делители 5 → 3.3V</text>
+<text x="510" y="320" class="small">4 делителя: 1 кОм + 2 кОм</text>
+<rect x="925" y="200" width="230" height="375" rx="18" fill="#e0e8ff" stroke="#496ecb" stroke-width="2"/>
+<text x="960" y="242" class="label">RFID-RC522</text>
+<g class="pin"><text x="230" y="280">3.3V</text><text x="230" y="350">D10</text><text x="230" y="395">D13</text><text x="230" y="440">D11</text><text x="230" y="485">D9</text><text x="230" y="530">D12</text><text x="230" y="565">GND</text>
+<text x="945" y="280">3.3V</text><text x="945" y="350">SDA / SS</text><text x="945" y="395">SCK</text><text x="945" y="440">MOSI</text><text x="945" y="485">RST</text><text x="945" y="530">MISO</text><text x="945" y="565">GND</text></g>
+<path class="wire" stroke="#db7427" d="M300 275H925"/>
+<path class="wire" stroke="#6976b8" d="M300 345H485M725 345H925M300 390H485M725 390H925M300 435H485M725 435H925M300 480H485M725 480H925"/>
+<path class="wire" stroke="#2b94a3" d="M300 525H925"/>
+<path class="wire" stroke="#303b49" d="M300 560H925"/>
+<text x="520" y="360" class="small">1к → ● → RC522</text><text x="520" y="405" class="small">1к → ● → RC522</text><text x="520" y="450" class="small">1к → ● → RC522</text><text x="520" y="495" class="small">1к → ● → RC522</text>
+<text x="935" y="600" class="small">IRQ не подключать</text>
+<rect x="750" y="630" width="405" height="185" rx="14" fill="#fff" stroke="#788aa7"/>
+<text x="780" y="661" class="label">RGB: общий катод / «−»</text>
+<g class="pin"><text x="245" y="690">D5</text><text x="245" y="725">D6</text><text x="245" y="760">D7</text><text x="230" y="800">GND</text><text x="775" y="690">R</text><text x="775" y="725">G</text><text x="775" y="760">B</text><text x="775" y="800">общий / «−»</text></g>
+<path class="wire" stroke="#d14545" d="M300 685H485M585 685H750"/><path class="wire" stroke="#22935a" d="M300 720H485M585 720H750"/><path class="wire" stroke="#3979ce" d="M300 755H485M585 755H750"/>
+<g fill="white" stroke="#586984"><rect x="485" y="673" width="100" height="24"/><rect x="485" y="708" width="100" height="24"/><rect x="485" y="743" width="100" height="24"/></g>
+<text x="500" y="691" class="small">330 Ом</text><text x="500" y="726" class="small">330 Ом</text><text x="500" y="761" class="small">330 Ом</text>
+<path class="wire" stroke="#303b49" d="M300 795H750"/>
+<rect x="50" y="850" width="1105" height="155" rx="15" fill="#fff"/>
+<text x="75" y="884" class="label">Пищалка и общая земля</text>
+<text x="75" y="917" class="sub">Пассивный пьезоэлемент: D4 → 100–220 Ом → «+», «−» → GND.</text>
+<text x="75" y="946" class="sub">Пищалка неизвестного тока: используйте транзисторный ключ (см. инструкцию).</text>
+<text x="75" y="975" class="sub">Каждая точка ● соединена через 2 кОм с GND. Все земли соедините вместе.</text>
+</svg>
+

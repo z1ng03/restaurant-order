@@ -653,7 +653,8 @@ function initCartPage() {
   }
 
   function resetRfidModal() {
-    document.getElementById("rfid-status").textContent = "Приложите банковскую/дебетовую карту.";
+    state.rfidFinishing = false;
+    document.getElementById("rfid-status").textContent = "Приложите учебную RFID-карту.";
     document.getElementById("rfid-waiting").hidden = true;
     document.getElementById("rfid-connect-btn").hidden = false;
     document.getElementById("rfid-connect-btn").disabled = false;
@@ -682,7 +683,8 @@ function initCartPage() {
     const serial = new SerialPayment();
     s.serial = serial;
     serial.onMessage = (line) => {
-      if (line === "READER_READY" || line === "WAITING_FOR_CARD") {
+      if (s.serial !== serial || s.rfidFinishing) return;
+      if (line === "WAITING_FOR_CARD") {
         document.getElementById("rfid-waiting").hidden = false;
         connectBtn.hidden = true;
         statusEl.textContent = "Приложите карту к считывателю…";
@@ -692,6 +694,12 @@ function initCartPage() {
         finishRfidPayment(s, true);
       } else if (line === "PAYMENT_DECLINED") {
         finishRfidPayment(s, false);
+      } else if (line.startsWith("ERROR:") || line === "PAYMENT_TIMEOUT") {
+        const message = line === "ERROR:CARDS_NOT_CONFIGURED" ? "Сначала назначьте две карты на странице настройки RFID." : line === "PAYMENT_TIMEOUT" ? "Время ожидания карты истекло. Попробуйте снова." : "Ошибка считывателя: " + line;
+        s.serial = null;
+        void serial.disconnect();
+        resetRfidModal();
+        statusEl.textContent = message;
       } else if (line === "PAYMENT_CANCELLED") {
         resetRfidModal();
       }
@@ -707,6 +715,8 @@ function initCartPage() {
       await serial.connect();
       await serial.send("START_PAYMENT");
     } catch (err) {
+      if (s.serial !== serial) return;
+      s.serial = null;
       // Most commonly: the person closed the port-picker dialog.
       statusEl.textContent = `Не удалось подключиться: ${err.message}`;
       connectBtn.disabled = false;
@@ -714,28 +724,30 @@ function initCartPage() {
   }
 
   async function cancelRfidPayment(s) {
-    if (s.serial?.port) {
-      try {
-        await s.serial.send("CANCEL_PAYMENT");
-      } catch {
-        /* port may already be gone */
-      }
-      await s.serial.disconnect();
-      s.serial = null;
-    }
+    const serial = s.serial;
+    s.serial = null;
     toggleModal("rfid-modal", false);
+    if (serial) {
+      try { await serial.send("CANCEL_PAYMENT"); } catch {}
+      await serial.disconnect();
+    }
   }
 
   async function finishRfidPayment(s, approved) {
-    if (s.serial) {
-      await s.serial.disconnect();
-      s.serial = null;
-    }
+    if (s.rfidFinishing || document.getElementById("rfid-modal").hidden) return;
+    s.rfidFinishing = true;
+    const serial = s.serial;
+    s.serial = null;
     toggleModal("rfid-modal", false);
+    if (serial) {
+      // Let hardware finish its feedback before the port closes/reset occurs.
+      await new Promise(resolve => setTimeout(resolve, 1800));
+      await serial.disconnect();
+    }
     if (approved) {
       await confirmOrder(s, "KASPI_QR");
     } else {
-      showResult({ ok: false, title: "Оплата отклонена", message: "Банк отклонил операцию. Попробуйте другой способ оплаты." });
+      showResult({ ok: false, title: "Оплата отклонена", message: "Учебная карта отклонена. Заказ не оплачен, корзина сохранена." });
     }
   }
 

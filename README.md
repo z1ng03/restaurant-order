@@ -113,3 +113,7 @@ frontend/ index/cart (меню, корзина) · account/orders/profile (ка�
           api.js session.js client-auth.js ui.js receipt.js tracker.js script.js …
 docs/     API_v2.md  README_v1_original.md
 ```
+
+## Arduino: две карты, RGB и пищалка
+
+Новая инструкция: [docs/RFID_SETUP.md](docs/RFID_SETUP.md). Схема: [docs/RFID-wiring.svg](docs/RFID-wiring.svg). Настройка карт: http://localhost:8000/rfid-setup.html. Локальный запуск: START_RESTAURANT.bat.

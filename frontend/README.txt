@@ -36,29 +36,15 @@ localStorage. Перед запуском backend должен быть подн
    и выберите PAYMENT_APPROVED или PAYMENT_DECLINED.
 
 ЗАПУСК С ARDUINO И RC522
-1. Установите в Arduino IDE библиотеку MFRC522.
-2. Подключите RC522 к Arduino Uno/Nano:
-   SDA/SS -> D10
-   SCK    -> D13
-   MOSI   -> D11
-   MISO   -> D12
-   RST    -> D9
-   3.3V   -> 3.3V (не подключать к 5V)
-   GND    -> GND
-3. Загрузите скетч arduino/rc522_payment.ino.
-4. Закройте Serial Monitor, чтобы он не занимал COM-порт.
-5. Запустите start_server.bat. Проект откроется по адресу localhost:8000.
-6. Используйте Chrome или Edge, выберите оплату картой и нажмите
-   «Подключить RFID-считыватель».
-7. В системном окне выберите COM-порт Arduino и приложите RFID-карту.
-
-Протокол Serial: 9600 бод. Сайт отправляет START_PAYMENT и ждёт строку
-PAYMENT_APPROVED или PAYMENT_DECLINED, завершённую переводом строки.
-
-По умолчанию APPROVE_ANY_CARD = true, поэтому для демонстрации принимается
-любая совместимая RFID-карта. Для проверки по UID установите false и замените
-DE AD BE EF в AUTHORIZED_UIDS на UID своей карты.
-
+Новая схема, RGB, пищалка и две назначаемые карты описаны в ../docs/RFID_SETUP.md.
+Схема: ../docs/RFID-wiring.svg.
+Основной скетч: arduino/rc522_payment/rc522_payment.ino.
+Настройка карт и проверка сигналов: http://localhost:8000/rfid-setup.html.
+Нужно назначить обе карты; по умолчанию ни одна карта не одобряется.
+Карты сохраняются в EEPROM. Неизвестная карта отклоняется.
+В корне проекта START_RESTAURANT.bat запускает сайт и API с отдельной демо-базой.
+После сборки проводов UPLOAD_ARDUINO.bat загружает проверенную сборку в Uno на COM3.
+Для другого порта: powershell -File UPLOAD_ARDUINO.ps1 -Port COM4.
 ВАЖНО
 RC522 читает совместимые RFID-карты/метки и не является банковским терминалом.
 Представленная «оплата картой» - учебная имитация. Для реального приёма
