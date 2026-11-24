@@ -3,123 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Меню</title>
-
-    <link rel="stylesheet" href="style.css">
-
-    <!-- Иконки -->
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <title>Меню ресторана — MAISON</title>
+    <link rel="stylesheet" href="style.css?v=20261124">
+    <meta name="theme-color" content="#285345">
+    <link rel="stylesheet" href="restaurant.css?v=20261124b">
 </head>
-
 <body>
+<a class="skip-link" href="#main-content">К содержимому</a>
+<header class="brand-header"><div class="brand-header-inner"><a class="brand" href="index.html" aria-label="MAISON — меню ресторана"><strong>MAISON</strong><small>Kitchen & lounge</small></a><nav class="brand-nav" aria-label="Основная навигация"><a href="index.html" aria-current="page">Меню</a><a href="orders.html">Мои заказы</a><a href="account.html">Кабинет</a><a href="cart.html" class="nav-cart">Корзина</a></nav></div></header>
 
-<div class="page">
+    <section class="restaurant-hero" aria-label="Добро пожаловать в MAISON"><div class="hero-copy"><p class="eyebrow">Место для ваших встреч</p><h1>Хороший вкус.<br>Тёплые встречи.</h1><p>Любимые блюда, неспешные разговоры и маленькие поводы собраться вместе.</p><span class="hero-note">Приготовим ваш заказ с заботой</span></div><div class="hero-visual"><img src="images/food/hero.jpg" alt="Тёплый интерьер ресторана" fetchpriority="high"><span class="hero-caption">MAISON · KITCHEN & LOUNGE</span></div></section>
+    <div class="menu-page">
+        <aside class="categories" aria-label="Категории меню">
+            <h1 class="side-title">Меню</h1>
+            <p class="table-indicator" id="table-indicator"></p>
+            <div id="category-buttons"><!-- filled from GET /api/menu --></div>
+        <div class="menu-side-actions">
+            <a class="cart-link" href="cart.html" aria-label="Открыть корзину">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 3h2l2.4 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.6L21 7H6M10 20a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm9 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/>
+                </svg>
+                <span class="cart-label">Корзина</span>
+                <span class="cart-badge" id="cart-count">0</span>
+            </a>
+            <!-- Личный кабинет: ровно под корзиной, тот же размер и оформление -->
+            <a class="account-link" id="account-link" href="account.html" aria-label="Личный кабинет" title="Личный кабинет">
+                <img src="images/person.svg" alt="">
+            </a>
+        </div>
+        </aside>
 
-    <!-- Категории -->
-    <aside class="categories">
-        <button>Горячие</button>
-        <button>Холодные</button>
-        <button>Закуски</button>
-        <button>Напитки</button>
-        <button>Кальяны</button>
-    </aside>
+        <main id="main-content" class="products-area">
+            <div class="products-heading">
+                <div>
+                    <p class="eyebrow">Ресторанное меню</p>
+                    <h2 id="category-title">Меню</h2>
+                </div>
+                <p class="products-count" id="products-count"></p>
+            </div>
+
+            <div class="menu-toolbar"><label class="menu-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="menu-search" type="search" placeholder="Найти блюдо или напиток" aria-label="Поиск по всему меню"></label><span class="menu-toolbar-note">Выбирайте. Пробуйте. Наслаждайтесь.</span></div>
+            <section class="products" id="products" aria-live="polite"></section>
+        </main>
 
 
-    <!-- Блюда -->
-    <main class="products">
 
-        <div class="card">
-            <div class="title">Блюдо 1</div>
+        <!-- Статус заказа: левее кнопки корзины (скрыт, пока у стола нет заказов) -->
+        <button class="order-tracker" id="order-tracker" type="button" hidden aria-haspopup="dialog">
+            <span class="tracker-dot" aria-hidden="true"></span>
+            <span class="tracker-text">
+                <strong class="tracker-title">Мой заказ</strong>
+                <small class="tracker-sub"></small>
+            </span>
+        </button>
+    </div>
 
-            <img src="images.webp" alt="Блюдо">
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-            <div class="bottom">
-                <span class="price">Цена</span>
-                <button class="add-cart">
-                    <i class="fa-solid fa-cart-plus"></i>
-                </button>
+    <div class="checkout-modal" id="tracker-modal" hidden>
+        <div class="modal-card tracker-modal-card" role="dialog" aria-modal="true" aria-labelledby="tracker-title">
+            <button class="modal-close" id="tracker-close-btn" type="button" aria-label="Закрыть статус заказа">×</button>
+            <p class="eyebrow">Статус заказа</p>
+            <h2 id="tracker-title">Заказ</h2>
+            <p id="tracker-subtitle" style="margin:0 0 10px"></p>
+            <div class="tracker-orders" id="tracker-orders"></div>
+            <ol class="tracker-steps" id="tracker-steps"></ol>
+            <div class="tracker-cancelled" id="tracker-cancelled" hidden></div>
+            <button class="secondary-btn" id="tracker-receipt-btn" type="button" hidden style="margin-top:14px;width:100%">Показать чек</button>
+        </div>
+    </div>
+
+    <div class="dish-modal" id="dish-modal" hidden>
+        <div class="dish-modal-card" role="dialog" aria-modal="true" aria-labelledby="dish-modal-title">
+            <button class="dish-modal-close" id="dish-modal-close" type="button" aria-label="Закрыть описание">×</button>
+
+            <div class="dish-modal-image">
+                <img id="dish-modal-image" src="" alt="">
+            </div>
+
+            <div class="dish-modal-content">
+                <p class="eyebrow">Информация о блюде</p>
+                <h2 id="dish-modal-title"></h2>
+                <p class="dish-description" id="dish-description"></p>
+
+                <section class="dish-info-section">
+                    <div class="composition-head">
+                        <h3>Состав на 1 порцию</h3>
+                        <button class="link-btn" id="composition-reset" type="button" hidden>Вернуть по рецепту</button>
+                    </div>
+                    <ul class="ingredient-list" id="dish-ingredients"></ul>
+                </section>
+
+                <section class="dish-info-section" id="dish-options-section" hidden>
+                    <h3>Дополнительно</h3>
+                    <div id="dish-options-list" class="dish-options-list"></div>
+                </section>
+
+                <section class="allergy-warning" id="dish-allergy-section" hidden>
+                    <span class="warning-icon" aria-hidden="true">!</span>
+                    <div>
+                        <h3>Аллергены в выбранном составе</h3>
+                        <ul class="allergen-groups" id="dish-allergen-groups"></ul>
+                        <p class="allergen-note" id="dish-allergen-manual" hidden></p>
+                    </div>
+                </section>
+
+                <p class="config-note" id="dish-config-note" role="status" aria-live="polite" hidden></p>
+                <p class="unavailable-note" id="dish-unavailable-note" hidden></p>
+
+                <div class="dish-modal-footer">
+                    <strong class="dish-modal-price" id="dish-modal-price"></strong>
+                    <button class="add-cart modal-add-cart" id="dish-modal-add" type="button">Добавить в корзину</button>
+                </div>
             </div>
         </div>
+    </div>
 
-
-        <div class="card">
-            <div class="title">Блюдо 1</div>
-
-            <img src="images.webp" alt="Блюдо">
-
-            <div class="bottom">
-                <span class="price">Цена</span>
-                <button class="add-cart">
-                    <i class="fa-solid fa-cart-plus"></i>
-                </button>
-            </div>
-        </div>
-
-
-        <div class="card">
-            <div class="title">Блюдо 1</div>
-
-            <img src="images.webp" alt="Блюдо">
-
-            <div class="bottom">
-                <span class="price">Цена</span>
-                <button class="add-cart">
-                    <i class="fa-solid fa-cart-plus"></i>
-                </button>
-            </div>
-        </div>
-
-
-        <div class="card">
-            <div class="title">Блюдо 1</div>
-
-            <img src="images.webp" alt="Блюдо">
-
-            <div class="bottom">
-                <span class="price">Цена</span>
-                <button class="add-cart">
-                    <i class="fa-solid fa-cart-plus"></i>
-                </button>
-            </div>
-        </div>
-
-
-        <div class="card">
-            <div class="title">Блюдо 1</div>
-
-            <img src="images.webp" alt="Блюдо">
-
-            <div class="bottom">
-                <span class="price">Цена</span>
-                <button class="add-cart">
-                    <i class="fa-solid fa-cart-plus"></i>
-                </button>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="title">Блюдо 1</div>
-
-            <img src="images.webp" alt="Блюдо">
-
-            <div class="bottom">
-                <span class="price">Цена</span>
-                <button class="add-cart">
-                    <i class="fa-solid fa-cart-plus"></i>
-                </button>
-            </div>
-        </div>
-
-    </main>
-
-
-    <!-- Большая корзина -->
-    <button class="cart">
-        <i class="fa-solid fa-cart-shopping"></i>
-    </button>
-
-</div>
-
+    <script src="api.js?v=20261124"></script>
+    <script src="ui.js?v=20261124"></script>
+    <script src="client-auth.js?v=20261124"></script>
+    <script src="session.js?v=20261124"></script>
+    <script src="receipt.js?v=20261124"></script>
+    <script src="tracker.js?v=20261124"></script>
+    <script src="script.js?v=20261124"></script>
+<footer class="brand-footer"><strong>MAISON</strong><p>Хороший вкус. Тёплые встречи.</p><nav aria-label="Дополнительная навигация"><a href="index.html">Меню</a><a href="account.html">Личный кабинет</a><a href="admin.html">Для команды</a></nav></footer>
 </body>
 </html>

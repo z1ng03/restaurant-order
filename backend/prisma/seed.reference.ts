@@ -151,6 +151,11 @@ export async function seedReference(db: PrismaClient = prisma, log: Log = () => 
     if (!category) {
       category = await db.category.create({ data: { name: categoryDef.name, imageUrl: categoryDef.image, sortOrder } });
     }
+    // Refresh only the original placeholder artwork; preserve administrator-uploaded photos.
+    await db.category.update({ where: { categoryId: category.categoryId }, data: {
+      sortOrder,
+      ...(!category.imageUrl || /\.svg(?:\?.*)?$/.test(category.imageUrl) ? { imageUrl: categoryDef.image } : {}),
+    } });
     sortOrder++;
 
     for (const dishDef of categoryDef.dishes) {
@@ -171,6 +176,9 @@ export async function seedReference(db: PrismaClient = prisma, log: Log = () => 
           await db.dish.update({ where: { dishId: dish.dishId }, data: { description: dishDef.description } });
           report.descriptionsFilled++;
         }
+      }
+      if (!dish.imageUrl || /\.svg(?:\?.*)?$/.test(dish.imageUrl) || dish.imageUrl === "images.webp") {
+        await db.dish.update({ where: { dishId: dish.dishId }, data: { imageUrl: dishDef.image } });
       }
       dishIdByName.set(dishDef.name, dish.dishId);
 

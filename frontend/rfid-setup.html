@@ -1,8 +1,9 @@
-<!doctype html>
-<html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Настройка RFID — Restaurant Order</title>
-<style>body{font:17px/1.5 system-ui;background:#f4f6fa;color:#17243a;max-width:900px;margin:35px auto;padding:0 20px}section{background:white;padding:24px;border-radius:18px;margin:18px 0}button,a.button{font:inherit;padding:12px 18px;margin:5px;border:1px solid #bec9da;border-radius:10px;background:#f5f8fc;cursor:pointer}button:disabled{opacity:.45;cursor:default}h1{line-height:1.15}#status{padding:16px;background:#e6efff;border-radius:10px}pre{white-space:pre-wrap;max-height:250px;overflow:auto;font-size:14px}table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #ddd;padding:8px;text-align:left}.note{color:#536079}</style>
-<h1>Две карты. Два результата.</h1><p>Учебная оплата: Arduino Uno + RC522 + RGB + пищалка.</p>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Настройка RFID — MAISON</title><link rel="stylesheet" href="style.css?v=20261124">    <meta name="theme-color" content="#285345">
+    <link rel="stylesheet" href="restaurant.css?v=20261124b">
+</head><body class="hardware-body">
+<a class="skip-link" href="#main-content">К содержимому</a>
+<header class="brand-header"><div class="brand-header-inner"><a class="brand" href="index.html" aria-label="MAISON — меню ресторана"><strong>MAISON</strong><small>Kitchen & lounge</small></a><nav class="brand-nav" aria-label="Основная навигация"><a href="index.html">Меню</a><a href="orders.html">Мои заказы</a><a href="account.html">Кабинет</a><a href="cart.html" class="nav-cart">Корзина</a></nav></div></header>
+<main id="main-content"><h1>Две карты. Два результата.</h1><p>Учебная оплата: Arduino Uno + RC522 + RGB + пищалка.</p>
 <section><h2>1. Подключение</h2><p>Откройте эту страницу в Chrome или Edge на localhost. Закройте монитор порта Arduino и другие вкладки, использующие считыватель.</p>
 <button id="connect">Подключить Arduino</button><button id="disconnect" disabled>Отключить</button><p id="status" role="status" aria-live="polite">Считыватель не подключён.</p></section>
 <section><h2>2. Назначение карт</h2><p>Нажмите кнопку и приложите нужную карту. Между действиями убирайте карту от антенны. Назначение сохраняется в Arduino.</p>
@@ -16,5 +17,5 @@
 <table><tr><th>Устройство</th><th>Arduino Uno</th></tr><tr><td>RC522 SDA / SS</td><td>D10 через делитель 1 кОм / 2 кОм</td></tr><tr><td>RC522 SCK</td><td>D13 через делитель 1 кОм / 2 кОм</td></tr><tr><td>RC522 MOSI</td><td>D11 через делитель 1 кОм / 2 кОм</td></tr><tr><td>RC522 MISO</td><td>D12</td></tr><tr><td>RC522 RST</td><td>D9 через делитель 1 кОм / 2 кОм</td></tr><tr><td>RC522 3.3V / GND / IRQ</td><td>3.3V / GND / не подключать</td></tr><tr><td>RGB R / G / B</td><td>D5 / D6 / D7, каждый через 330 Ом</td></tr><tr><td>RGB общий катод, «−»</td><td>GND</td></tr><tr><td>Пассивный пьезоэлемент + / −</td><td>D4 через 100–220 Ом / GND</td></tr></table>
 <p>Для RGB с общим анодом: общий контакт → 5V, в скетче COMMON_ANODE=true. Для активной пищалки измените ACTIVE_BUZZER=true. Для пищалки неизвестного тока используйте транзисторный ключ; подробности — в инструкции RFID_SETUP.md.</p></section>
 <section><h2>Журнал устройства</h2><pre id="log"></pre></section>
-<script src="serial-payment.js"></script><script src="rfid-setup.js"></script></html>
-
+<script src="serial-payment.js?v=20261124"></script><script src="rfid-setup.js?v=20261124"></script></main><footer class="brand-footer"><strong>MAISON</strong><p>Хороший вкус. Тёплые встречи.</p><nav aria-label="Дополнительная навигация"><a href="index.html">Меню</a><a href="account.html">Личный кабинет</a><a href="admin.html">Для команды</a></nav></footer>
+</body></html>

@@ -3,14 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Админ-панель</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="staff.css">
-    <link rel="stylesheet" href="admin.css">
+    <title>Админ-панель — MAISON</title>
+    <link rel="stylesheet" href="style.css?v=20261124">
+    <link rel="stylesheet" href="staff.css?v=20261124">
+    <link rel="stylesheet" href="admin.css?v=20261124">
+    <meta name="theme-color" content="#285345">
+    <link rel="stylesheet" href="restaurant.css?v=20261124b">
 </head>
 <body class="staff-body">
+<a class="skip-link" href="#staff-login-screen">К содержимому</a>
+<header class="brand-header"><div class="brand-header-inner"><a class="brand" href="index.html" aria-label="MAISON — меню ресторана"><strong>MAISON</strong><small>Kitchen & lounge</small></a><span class="brand-section-label">Команда ресторана</span><nav class="brand-nav" aria-label="Основная навигация"><a href="admin.html" aria-current="page">Управление</a><a href="kitchen.html">Кухня</a><a href="waiter.html">Зал</a></nav></div></header>
 
-    <section class="staff-login-page" id="staff-login-screen">
+
+    <section class="staff-login-page" id="staff-login-screen" tabindex="-1">
         <div class="monitor-select-card staff-login-card">
             <p class="eyebrow">Администратор</p>
             <h1>Вход в админ-панель</h1>
@@ -217,8 +222,9 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script src="api.js"></script>
-    <script src="staff-auth.js"></script>
-    <script src="admin.js"></script>
+    <script src="api.js?v=20261124"></script>
+    <script src="staff-auth.js?v=20261124"></script>
+    <script src="admin.js?v=20261124"></script>
+<footer class="brand-footer"><strong>MAISON</strong><p>Хороший вкус. Тёплые встречи.</p><nav aria-label="Дополнительная навигация"><a href="index.html">Меню</a><a href="account.html">Личный кабинет</a><a href="admin.html">Для команды</a></nav></footer>
 </body>
 </html>

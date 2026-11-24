@@ -3,22 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Выбор столика (dev)</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Выбор столика — MAISON</title>
+    <link rel="stylesheet" href="style.css?v=20261124">
+    <meta name="theme-color" content="#285345">
+    <link rel="stylesheet" href="restaurant.css?v=20261124b">
 </head>
 <body>
-    <main class="monitor-select-page">
+<a class="skip-link" href="#main-content">К содержимому</a>
+<header class="brand-header"><div class="brand-header-inner"><a class="brand" href="index.html" aria-label="MAISON — меню ресторана"><strong>MAISON</strong><small>Kitchen & lounge</small></a><nav class="brand-nav" aria-label="Основная навигация"><a href="index.html">Меню</a><a href="orders.html">Мои заказы</a><a href="account.html">Кабинет</a><a href="cart.html" class="nav-cart">Корзина</a></nav></div></header>
+
+    <main id="main-content" class="monitor-select-page">
         <div class="monitor-select-card">
-            <p class="eyebrow">Только для разработки</p>
+            <p class="eyebrow">Добро пожаловать в MAISON</p>
             <h1>Выберите столик</h1>
-            <p>На настоящем киоске монитор всегда открывает один и тот же адрес вида
-               <code>index.html?monitor=7</code> и никогда не видит этот экран.
-               Здесь - просто чтобы проверить приложение без шести физических мониторов.</p>
+            <p>Выберите ваш столик, чтобы открыть меню и оформить заказ. Мы позаботимся обо всём остальном.</p>
             <div id="table-list" class="monitor-table-list">Загрузка столиков…</div>
         </div>
     </main>
 
-    <script src="api.js"></script>
+    <script src="api.js?v=20261124"></script>
     <script>
         const params = new URLSearchParams(location.search);
         // `next` comes from the URL, so it is only ever one of OUR pages (no open redirect / javascript: URL).
@@ -51,5 +54,6 @@
 
         loadTables();
     </script>
+<footer class="brand-footer"><strong>MAISON</strong><p>Хороший вкус. Тёплые встречи.</p><nav aria-label="Дополнительная навигация"><a href="index.html">Меню</a><a href="account.html">Личный кабинет</a><a href="admin.html">Для команды</a></nav></footer>
 </body>
 </html>

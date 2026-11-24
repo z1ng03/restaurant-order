@@ -1,0 +1,250 @@
+[
+  {
+    "name": "Стейк с овощами",
+    "file": "steak.jpg",
+    "id": 27643033,
+    "source": "https://www.pexels.com/photo/27643033/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/27643033/pexels-photo-27643033.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Паста Карбонара",
+    "file": "carbonara.jpg",
+    "id": 12557543,
+    "source": "https://www.pexels.com/photo/12557543/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/12557543/pexels-photo-12557543.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Курица гриль",
+    "file": "chicken.jpg",
+    "id": 6896080,
+    "source": "https://www.pexels.com/photo/6896080/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/6896080/pexels-photo-6896080.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Салат Цезарь",
+    "file": "caesar.jpg",
+    "id": 6107787,
+    "source": "https://www.pexels.com/photo/6107787/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/6107787/pexels-photo-6107787.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Греческий салат",
+    "file": "greek-salad.jpg",
+    "id": 29990630,
+    "source": "https://www.pexels.com/photo/29990630/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/29990630/pexels-photo-29990630.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Капрезе",
+    "file": "caprese.jpg",
+    "id": 32570605,
+    "source": "https://www.pexels.com/photo/32570605/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/32570605/pexels-photo-32570605.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Картофель фри",
+    "file": "fries.jpg",
+    "id": 8880735,
+    "source": "https://www.pexels.com/photo/8880735/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/8880735/pexels-photo-8880735.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Куриные наггетсы",
+    "file": "nuggets.jpg",
+    "id": 11710530,
+    "source": "https://www.pexels.com/photo/11710530/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/11710530/pexels-photo-11710530.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Сырные палочки",
+    "file": "cheese-sticks.jpg",
+    "id": 37279725,
+    "source": "https://www.pexels.com/photo/37279725/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/37279725/pexels-photo-37279725.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Coca-Cola",
+    "file": "cola.jpg",
+    "id": 24860312,
+    "source": "https://www.pexels.com/photo/24860312/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/24860312/pexels-photo-24860312.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Домашний лимонад",
+    "file": "lemonade.jpg",
+    "id": 5946758,
+    "source": "https://www.pexels.com/photo/5946758/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/5946758/pexels-photo-5946758.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Апельсиновый сок",
+    "file": "orange-juice.jpg",
+    "id": 9273070,
+    "source": "https://www.pexels.com/photo/9273070/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/9273070/pexels-photo-9273070.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Кальян Classic",
+    "file": "hookah.jpg",
+    "id": 31346733,
+    "source": "https://www.pexels.com/photo/31346733/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/31346733/pexels-photo-31346733.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Кальян Premium",
+    "file": "hookah.jpg",
+    "id": 31346733,
+    "source": "https://www.pexels.com/photo/31346733/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/31346733/pexels-photo-31346733.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Кальян Fruit",
+    "file": "hookah.jpg",
+    "id": 31346733,
+    "source": "https://www.pexels.com/photo/31346733/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/31346733/pexels-photo-31346733.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Красное вино",
+    "file": "red-wine.jpg",
+    "id": 6688471,
+    "source": "https://www.pexels.com/photo/6688471/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/6688471/pexels-photo-6688471.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Светлое пиво",
+    "file": "beer.jpg",
+    "id": 19106394,
+    "source": "https://www.pexels.com/photo/19106394/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/19106394/pexels-photo-19106394.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Авторский коктейль",
+    "file": "cocktail.jpg",
+    "id": 14151942,
+    "source": "https://www.pexels.com/photo/14151942/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/14151942/pexels-photo-14151942.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Грибной крем-суп",
+    "file": "mushroom-soup.jpg",
+    "id": 39927805,
+    "source": "https://www.pexels.com/photo/39927805/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/39927805/pexels-photo-39927805.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Томатный суп",
+    "file": "tomato-soup.jpg",
+    "id": 6405531,
+    "source": "https://www.pexels.com/photo/6405531/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/6405531/pexels-photo-6405531.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Лосось на гриле",
+    "file": "salmon.jpg",
+    "id": 8112939,
+    "source": "https://www.pexels.com/photo/8112939/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/8112939/pexels-photo-8112939.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Пицца Маргарита",
+    "file": "pizza.jpg",
+    "id": 14590497,
+    "source": "https://www.pexels.com/photo/14590497/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/14590497/pexels-photo-14590497.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Бургер с говядиной",
+    "file": "burger.jpg",
+    "id": 17300437,
+    "source": "https://www.pexels.com/photo/17300437/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/17300437/pexels-photo-17300437.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Чизкейк",
+    "file": "cheesecake.jpg",
+    "id": 5687147,
+    "source": "https://www.pexels.com/photo/5687147/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/5687147/pexels-photo-5687147.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Шоколадный фондан",
+    "file": "fondant.jpg",
+    "id": 36183209,
+    "source": "https://www.pexels.com/photo/36183209/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/36183209/pexels-photo-36183209.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Тирамису",
+    "file": "tiramisu.jpg",
+    "id": 5038075,
+    "source": "https://www.pexels.com/photo/5038075/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/5038075/pexels-photo-5038075.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Капучино",
+    "file": "cappuccino.jpg",
+    "id": 2159123,
+    "source": "https://www.pexels.com/photo/2159123/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/2159123/pexels-photo-2159123.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Эспрессо",
+    "file": "espresso.jpg",
+    "id": 36781737,
+    "source": "https://www.pexels.com/photo/36781737/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/36781737/pexels-photo-36781737.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Чай с мятой",
+    "file": "mint-tea.jpg",
+    "id": 36228280,
+    "source": "https://www.pexels.com/photo/36228280/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/36228280/pexels-photo-36228280.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "Ягодный лимонад",
+    "file": "berry-lemonade.jpg",
+    "id": 14930482,
+    "source": "https://www.pexels.com/photo/14930482/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/14930482/pexels-photo-14930482.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "name": "hero",
+    "file": "restaurant-hero.jpg",
+    "id": 29962487,
+    "source": "https://www.pexels.com/photo/29962487/",
+    "license": "https://www.pexels.com/license/",
+    "imageUrl": "https://images.pexels.com/photos/29962487/pexels-photo-29962487.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  }
+]

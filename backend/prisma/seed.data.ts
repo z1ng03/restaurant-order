@@ -1,3 +1,4 @@
+import { MENU_PHOTOS } from "./seed.photos";
 /**
  * Reference data for seed.reference.ts. Pure data, no database access.
  *
@@ -317,3 +318,651 @@ export const STAFF = [
   { name: "Айгерим", login: "aigerim", password: "waiter123", role: "WAITER" },
   { name: "Марат", login: "marat", password: "chef123", role: "CHEF" },
 ] as const;
+
+
+// MAISON catalog additions; keep recipes and allergen tags available to all clients.
+INGREDIENTS.push(...[
+  {
+    "name": "Шампиньоны",
+    "unit": "kg",
+    "stock": 8
+  },
+  {
+    "name": "Питьевая вода",
+    "unit": "l",
+    "stock": 100
+  },
+  {
+    "name": "Лосось",
+    "unit": "kg",
+    "stock": 8,
+    "tags": [
+      [
+        "fish",
+        "CONTAINS"
+      ]
+    ]
+  },
+  {
+    "name": "Пшеничная мука",
+    "unit": "kg",
+    "stock": 15,
+    "tags": [
+      [
+        "gluten",
+        "CONTAINS"
+      ]
+    ]
+  },
+  {
+    "name": "Сливочное масло",
+    "unit": "kg",
+    "stock": 5,
+    "tags": [
+      [
+        "milk",
+        "CONTAINS"
+      ]
+    ]
+  },
+  {
+    "name": "Сахар",
+    "unit": "kg",
+    "stock": 10
+  },
+  {
+    "name": "Булочка бриошь",
+    "unit": "pcs",
+    "stock": 40,
+    "tags": [
+      [
+        "gluten",
+        "CONTAINS"
+      ],
+      [
+        "eggs",
+        "CONTAINS"
+      ],
+      [
+        "milk",
+        "CONTAINS"
+      ],
+      [
+        "sesame",
+        "CONTAINS"
+      ]
+    ]
+  },
+  {
+    "name": "Сыр чеддер",
+    "unit": "kg",
+    "stock": 4,
+    "tags": [
+      [
+        "milk",
+        "CONTAINS"
+      ]
+    ]
+  },
+  {
+    "name": "Соус для бургера",
+    "unit": "l",
+    "stock": 3,
+    "tags": [
+      [
+        "eggs",
+        "CONTAINS"
+      ],
+      [
+        "mustard",
+        "CONTAINS"
+      ]
+    ]
+  },
+  {
+    "name": "Сливочный сыр",
+    "unit": "kg",
+    "stock": 6,
+    "tags": [
+      [
+        "milk",
+        "CONTAINS"
+      ]
+    ]
+  },
+  {
+    "name": "Печенье песочное",
+    "unit": "kg",
+    "stock": 5,
+    "tags": [
+      [
+        "gluten",
+        "CONTAINS"
+      ],
+      [
+        "milk",
+        "CONTAINS"
+      ],
+      [
+        "eggs",
+        "CONTAINS"
+      ]
+    ]
+  },
+  {
+    "name": "Тёмный шоколад",
+    "unit": "kg",
+    "stock": 4,
+    "tags": [
+      [
+        "soy",
+        "CONTAINS"
+      ],
+      [
+        "milk",
+        "CONTAINS"
+      ]
+    ]
+  },
+  {
+    "name": "Маскарпоне",
+    "unit": "kg",
+    "stock": 4,
+    "tags": [
+      [
+        "milk",
+        "CONTAINS"
+      ]
+    ]
+  },
+  {
+    "name": "Печенье савоярди",
+    "unit": "kg",
+    "stock": 3,
+    "tags": [
+      [
+        "gluten",
+        "CONTAINS"
+      ],
+      [
+        "eggs",
+        "CONTAINS"
+      ]
+    ]
+  },
+  {
+    "name": "Кофе молотый",
+    "unit": "kg",
+    "stock": 5
+  },
+  {
+    "name": "Молоко",
+    "unit": "l",
+    "stock": 15,
+    "tags": [
+      [
+        "milk",
+        "CONTAINS"
+      ]
+    ]
+  },
+  {
+    "name": "Чай чёрный",
+    "unit": "kg",
+    "stock": 2
+  },
+  {
+    "name": "Ягодный микс",
+    "unit": "kg",
+    "stock": 5,
+    "tags": [
+      [
+        "fruits",
+        "CONTAINS"
+      ]
+    ]
+  },
+  {
+    "name": "Какао",
+    "unit": "kg",
+    "stock": 2
+  }
+] as IngredientDef[]);
+CATEGORIES.find(c => c.name === "Горячие блюда")!.dishes.push(...[
+  {
+    "name": "Лосось на гриле",
+    "price": 5900,
+    "image": "/images/food/salmon.jpg",
+    "description": "Филе лосося с румяной корочкой, овощами гриль и долькой лимона. Лёгкое сочетание для неспешного ужина.",
+    "legacyDescriptions": [],
+    "recipe": [
+      {
+        "ingredient": "Лосось",
+        "quantity": 0.2,
+        "customizable": false
+      },
+      {
+        "ingredient": "Цукини",
+        "quantity": 0.1,
+        "customizable": false
+      },
+      {
+        "ingredient": "Сладкий перец",
+        "quantity": 0.08,
+        "customizable": false
+      },
+      {
+        "ingredient": "Оливковое масло",
+        "quantity": 0.015,
+        "customizable": false
+      },
+      {
+        "ingredient": "Лимон",
+        "quantity": 0.25,
+        "customizable": false
+      }
+    ]
+  },
+  {
+    "name": "Пицца Маргарита",
+    "price": 3600,
+    "image": "/images/food/pizza.jpg",
+    "description": "Тонкое тесто, томатный соус, моцарелла и свежий базилик. Итальянская классика, которой хочется поделиться.",
+    "legacyDescriptions": [],
+    "recipe": [
+      {
+        "ingredient": "Пшеничная мука",
+        "quantity": 0.2,
+        "customizable": false
+      },
+      {
+        "ingredient": "Питьевая вода",
+        "quantity": 0.12,
+        "customizable": false
+      },
+      {
+        "ingredient": "Томаты",
+        "quantity": 0.12,
+        "customizable": false
+      },
+      {
+        "ingredient": "Сыр моцарелла",
+        "quantity": 0.12,
+        "customizable": false
+      },
+      {
+        "ingredient": "Базилик",
+        "quantity": 0.005,
+        "customizable": false
+      },
+      {
+        "ingredient": "Оливковое масло",
+        "quantity": 0.015,
+        "customizable": false
+      }
+    ]
+  },
+  {
+    "name": "Бургер с говядиной",
+    "price": 3900,
+    "image": "/images/food/burger.jpg",
+    "description": "Сочная говяжья котлета, чеддер, свежие овощи и фирменный соус в мягкой булочке бриошь.",
+    "legacyDescriptions": [],
+    "recipe": [
+      {
+        "ingredient": "Говядина",
+        "quantity": 0.18,
+        "customizable": false
+      },
+      {
+        "ingredient": "Булочка бриошь",
+        "quantity": 1,
+        "customizable": false
+      },
+      {
+        "ingredient": "Сыр чеддер",
+        "quantity": 0.03,
+        "customizable": false
+      },
+      {
+        "ingredient": "Томаты",
+        "quantity": 0.04,
+        "customizable": false
+      },
+      {
+        "ingredient": "Салат романо",
+        "quantity": 0.02,
+        "customizable": false
+      },
+      {
+        "ingredient": "Красный лук",
+        "quantity": 0.015,
+        "customizable": false
+      },
+      {
+        "ingredient": "Соус для бургера",
+        "quantity": 0.025,
+        "customizable": false
+      }
+    ]
+  }
+]);
+CATEGORIES.find(c => c.name === "Напитки")!.dishes.push(...[
+  {
+    "name": "Капучино",
+    "price": 1400,
+    "image": "/images/food/cappuccino.jpg",
+    "description": "Двойной эспрессо под бархатистой молочной пеной. Мягкий кофейный вкус, 200 мл.",
+    "legacyDescriptions": [],
+    "recipe": [
+      {
+        "ingredient": "Кофе молотый",
+        "quantity": 0.018,
+        "customizable": false
+      },
+      {
+        "ingredient": "Питьевая вода",
+        "quantity": 0.04,
+        "customizable": false
+      },
+      {
+        "ingredient": "Молоко",
+        "quantity": 0.16,
+        "customizable": false
+      }
+    ]
+  },
+  {
+    "name": "Эспрессо",
+    "price": 1000,
+    "image": "/images/food/espresso.jpg",
+    "description": "Концентрированный кофе со стойкой крема и глубоким ароматом. Порция 40 мл.",
+    "legacyDescriptions": [],
+    "recipe": [
+      {
+        "ingredient": "Кофе молотый",
+        "quantity": 0.018,
+        "customizable": false
+      },
+      {
+        "ingredient": "Питьевая вода",
+        "quantity": 0.04,
+        "customizable": false
+      }
+    ]
+  },
+  {
+    "name": "Чай с мятой",
+    "price": 1800,
+    "image": "/images/food/mint-tea.jpg",
+    "description": "Чёрный чай с листьями свежей мяты и лимоном. Чайник 600 мл — для тёплой беседы.",
+    "legacyDescriptions": [],
+    "recipe": [
+      {
+        "ingredient": "Чай чёрный",
+        "quantity": 0.008,
+        "customizable": false
+      },
+      {
+        "ingredient": "Питьевая вода",
+        "quantity": 0.6,
+        "customizable": false
+      },
+      {
+        "ingredient": "Мята",
+        "quantity": 0.005,
+        "customizable": false
+      },
+      {
+        "ingredient": "Лимон",
+        "quantity": 0.25,
+        "customizable": false
+      }
+    ]
+  },
+  {
+    "name": "Ягодный лимонад",
+    "price": 1700,
+    "image": "/images/food/berry-lemonade.jpg",
+    "description": "Ягоды, лимон и свежая мята с лёгкой сладостью. Освежающий напиток, 350 мл.",
+    "legacyDescriptions": [],
+    "recipe": [
+      {
+        "ingredient": "Ягодный микс",
+        "quantity": 0.05,
+        "customizable": false
+      },
+      {
+        "ingredient": "Питьевая вода",
+        "quantity": 0.28,
+        "customizable": false
+      },
+      {
+        "ingredient": "Сахарный сироп",
+        "quantity": 0.02,
+        "customizable": false
+      },
+      {
+        "ingredient": "Лимон",
+        "quantity": 0.25,
+        "customizable": false
+      },
+      {
+        "ingredient": "Мята",
+        "quantity": 0.003,
+        "customizable": false
+      }
+    ]
+  }
+]);
+CATEGORIES.splice(1, 0, {
+  "name": "Супы",
+  "image": "/images/food/mushroom-soup.jpg",
+  "dishes": [
+    {
+      "name": "Грибной крем-суп",
+      "price": 2400,
+      "image": "/images/food/mushroom-soup.jpg",
+      "description": "Нежный крем-суп из шампиньонов со сливками и хрустящими сухариками. Согревающий вкус и бархатистая текстура.",
+      "legacyDescriptions": [],
+      "recipe": [
+        {
+          "ingredient": "Шампиньоны",
+          "quantity": 0.18,
+          "customizable": false
+        },
+        {
+          "ingredient": "Сливки",
+          "quantity": 0.08,
+          "customizable": false
+        },
+        {
+          "ingredient": "Картофель",
+          "quantity": 0.08,
+          "customizable": false
+        },
+        {
+          "ingredient": "Питьевая вода",
+          "quantity": 0.15,
+          "customizable": false
+        },
+        {
+          "ingredient": "Сухарики",
+          "quantity": 0.02,
+          "customizable": false
+        },
+        {
+          "ingredient": "Сливочное масло",
+          "quantity": 0.015,
+          "customizable": false
+        }
+      ]
+    },
+    {
+      "name": "Томатный суп",
+      "price": 2200,
+      "image": "/images/food/tomato-soup.jpg",
+      "description": "Спелые томаты, базилик и оливковое масло. Подаём с сухариками и тёртым пармезаном.",
+      "legacyDescriptions": [],
+      "recipe": [
+        {
+          "ingredient": "Томаты",
+          "quantity": 0.25,
+          "customizable": false
+        },
+        {
+          "ingredient": "Питьевая вода",
+          "quantity": 0.12,
+          "customizable": false
+        },
+        {
+          "ingredient": "Базилик",
+          "quantity": 0.005,
+          "customizable": false
+        },
+        {
+          "ingredient": "Оливковое масло",
+          "quantity": 0.015,
+          "customizable": false
+        },
+        {
+          "ingredient": "Сухарики",
+          "quantity": 0.02,
+          "customizable": false
+        },
+        {
+          "ingredient": "Сыр пармезан",
+          "quantity": 0.015,
+          "customizable": false
+        }
+      ]
+    }
+  ]
+});
+CATEGORIES.splice(4, 0, {
+  "name": "Десерты",
+  "image": "/images/food/cheesecake.jpg",
+  "dishes": [
+    {
+      "name": "Чизкейк",
+      "price": 2400,
+      "image": "/images/food/cheesecake.jpg",
+      "description": "Сливочный чизкейк на рассыпчатой основе из печенья. Завершаем подачу ягодами и хорошим настроением.",
+      "legacyDescriptions": [],
+      "recipe": [
+        {
+          "ingredient": "Сливочный сыр",
+          "quantity": 0.1,
+          "customizable": false
+        },
+        {
+          "ingredient": "Печенье песочное",
+          "quantity": 0.035,
+          "customizable": false
+        },
+        {
+          "ingredient": "Сливочное масло",
+          "quantity": 0.015,
+          "customizable": false
+        },
+        {
+          "ingredient": "Сахар",
+          "quantity": 0.025,
+          "customizable": false
+        },
+        {
+          "ingredient": "Яйцо",
+          "quantity": 0.25,
+          "customizable": false
+        },
+        {
+          "ingredient": "Ягодный микс",
+          "quantity": 0.03,
+          "customizable": false
+        }
+      ]
+    },
+    {
+      "name": "Шоколадный фондан",
+      "price": 2600,
+      "image": "/images/food/fondant.jpg",
+      "description": "Тёплый шоколадный десерт с нежной жидкой серединой. Насыщенный какао-вкус и тонкая корочка.",
+      "legacyDescriptions": [],
+      "recipe": [
+        {
+          "ingredient": "Тёмный шоколад",
+          "quantity": 0.06,
+          "customizable": false
+        },
+        {
+          "ingredient": "Сливочное масло",
+          "quantity": 0.03,
+          "customizable": false
+        },
+        {
+          "ingredient": "Яйцо",
+          "quantity": 1,
+          "customizable": false
+        },
+        {
+          "ingredient": "Пшеничная мука",
+          "quantity": 0.02,
+          "customizable": false
+        },
+        {
+          "ingredient": "Сахар",
+          "quantity": 0.025,
+          "customizable": false
+        }
+      ]
+    },
+    {
+      "name": "Тирамису",
+      "price": 2500,
+      "image": "/images/food/tiramisu.jpg",
+      "description": "Воздушный маскарпоне, савоярди, пропитанные эспрессо, и тонкий слой какао. Наша маленькая итальянская традиция.",
+      "legacyDescriptions": [],
+      "recipe": [
+        {
+          "ingredient": "Маскарпоне",
+          "quantity": 0.08,
+          "customizable": false
+        },
+        {
+          "ingredient": "Печенье савоярди",
+          "quantity": 0.04,
+          "customizable": false
+        },
+        {
+          "ingredient": "Кофе молотый",
+          "quantity": 0.01,
+          "customizable": false
+        },
+        {
+          "ingredient": "Питьевая вода",
+          "quantity": 0.04,
+          "customizable": false
+        },
+        {
+          "ingredient": "Сливки",
+          "quantity": 0.04,
+          "customizable": false
+        },
+        {
+          "ingredient": "Сахар",
+          "quantity": 0.02,
+          "customizable": false
+        },
+        {
+          "ingredient": "Какао",
+          "quantity": 0.005,
+          "customizable": false
+        }
+      ]
+    }
+  ]
+});
+for (const category of CATEGORIES) {
+  for (const dish of category.dishes) { if (MENU_PHOTOS[dish.name]) dish.image = MENU_PHOTOS[dish.name]; }
+  category.image = category.dishes[0]?.image ?? category.image;
+}

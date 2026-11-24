@@ -44,16 +44,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 /* ТЗ §2 (menu), §3 (карточка блюда) + v2 FR-02 (состав), FR-03 (аллергены). */
 
 function initMenuPage() {
-  const state = { categories: [], activeCategoryId: null };
+  const state = { categories: [], activeCategoryId: null, query: "" };
   const dishModal = createDishModal();
 
+  document.getElementById("menu-search")?.addEventListener("input", (event) => {
+    state.query = event.target.value.trim().toLocaleLowerCase("ru");
+    selectCategory(state, state.activeCategoryId);
+  });
   loadMenu();
 
   async function loadMenu() {
     const productsEl = document.getElementById("products");
     try {
       const { categories } = await api.get("/menu");
-      state.categories = categories;
+      state.categories = categories.filter(category => category.dishes.length > 0);
       renderCategoryButtons(state, selectCategory);
       const firstWithDishes = categories.find((c) => c.dishes.length > 0) ?? categories[0];
       if (firstWithDishes) selectCategory(state, firstWithDishes.categoryId);
@@ -66,19 +70,20 @@ function initMenuPage() {
     s.activeCategoryId = categoryId;
     const category = s.categories.find((c) => String(c.categoryId) === String(categoryId));
     document.querySelectorAll(".category-btn").forEach((btn) => {
-      btn.classList.toggle("active", String(btn.dataset.categoryId) === String(categoryId));
+      btn.classList.toggle("active", !s.query && String(btn.dataset.categoryId) === String(categoryId));
     });
-    document.getElementById("category-title").textContent = category?.name ?? "Меню";
-    renderProducts(category?.dishes ?? []);
+    document.getElementById("category-title").textContent = s.query ? "Поиск по меню" : (category?.name ?? "Меню");
+    const dishes = s.query ? s.categories.flatMap(c => c.dishes).filter(d => (d.name + " " + (d.description ?? "")).toLocaleLowerCase("ru").includes(s.query)) : (category?.dishes ?? []);
+    renderProducts(dishes);
   }
 
   function renderProducts(dishes) {
     const productsEl = document.getElementById("products");
     const countEl = document.getElementById("products-count");
-    countEl.textContent = dishes.length ? `${dishes.length} блюд` : "";
+    countEl.textContent = `${dishes.length} ${new Intl.PluralRules("ru").select(dishes.length) === "one" ? "позиция" : new Intl.PluralRules("ru").select(dishes.length) === "few" ? "позиции" : "позиций"}`;
 
     if (dishes.length === 0) {
-      productsEl.innerHTML = `<p class="menu-load-error">В этой категории пока нет блюд.</p>`;
+      productsEl.innerHTML = `<p class="menu-load-error">Ничего не найдено. Попробуйте другое название или выберите категорию.</p>`;
       return;
     }
 
@@ -92,7 +97,7 @@ function initMenuPage() {
       imgWrap.className = "card-image-wrap";
       imgWrap.setAttribute("aria-label", `Подробнее о блюде ${dish.name}`);
       imgWrap.innerHTML = `
-        <img src="${escapeHtml(dish.imageUrl ?? "")}" alt="${escapeHtml(dish.name)}">
+        <img src="${escapeHtml(dish.imageUrl ?? "")}" alt="${escapeHtml(dish.name)}" loading="lazy" decoding="async" width="800" height="550">
         <span class="details-hint">Подробнее</span>
         ${dish.is21Plus ? '<span class="age-badge card-age-badge">21+</span>' : ""}
         ${dish.available ? "" : `<span class="unavailable-badge" title="${escapeHtml(dish.unavailableMessage ?? "")}">Нет в наличии</span>`}
@@ -103,6 +108,7 @@ function initMenuPage() {
       content.className = "card-content";
       content.innerHTML = `
         <h3>${escapeHtml(dish.name)}</h3>
+        <p class="card-description">${escapeHtml(dish.description ?? "")}</p>
         <div class="card-bottom">
           <span class="price">${formatMoney(dish.price)}</span>
           <button type="button" class="add-cart" ${dish.available ? "" : "disabled"}>+ В корзину</button>
@@ -136,7 +142,13 @@ function renderCategoryButtons(state, onSelect) {
     btn.className = "category-btn" + (hasAgeRestricted ? " age-restricted-category" : "");
     btn.dataset.categoryId = category.categoryId;
     btn.innerHTML = hasAgeRestricted ? `${escapeHtml(category.name)} <span>21+</span>` : escapeHtml(category.name);
-    btn.addEventListener("click", () => onSelect(state, category.categoryId));
+    btn.innerHTML += '<span class="category-number">' + category.dishes.length + '</span>';
+    btn.addEventListener("click", () => {
+      state.query = "";
+      const search = document.getElementById("menu-search");
+      if (search) search.value = "";
+      onSelect(state, category.categoryId);
+    });
     container.appendChild(btn);
   }
 }
