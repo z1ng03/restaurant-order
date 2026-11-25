@@ -757,7 +757,7 @@ button {
 }
 
 .summary-total strong {
-    color: var(--accent);
+    color: var(--white);
 }
 
 .order-btn,
@@ -997,7 +997,7 @@ button {
 }
 
 .payment-total-line strong {
-    color: var(--accent);
+    color: var(--white);
 }
 
 .payment-options {
@@ -1239,7 +1239,7 @@ button {
 
     .item-total::before {
         content: "Общая цена: ";
-        color: var(--muted);
+        color: var(--white);
         font-weight: 400;
     }
 }
