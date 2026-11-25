@@ -28,9 +28,9 @@
 <text x="500" y="691" class="small">330 Ом</text><text x="500" y="726" class="small">330 Ом</text><text x="500" y="761" class="small">330 Ом</text>
 <path class="wire" stroke="#303b49" d="M300 795H750"/>
 <rect x="50" y="850" width="1105" height="155" rx="15" fill="#fff"/>
-<text x="75" y="884" class="label">Пищалка и общая земля</text>
-<text x="75" y="917" class="sub">Пассивный пьезоэлемент: D4 → 100–220 Ом → «+», «−» → GND.</text>
-<text x="75" y="946" class="sub">Пищалка неизвестного тока: используйте транзисторный ключ (см. инструкцию).</text>
+<text x="75" y="884" class="label">Индикация и общая земля</text>
+<text x="75" y="917" class="sub">Пищалка отключена. D4 свободен.</text>
+<text x="75" y="946" class="sub">Жёлтый — ожидание карты; зелёный — успех; красный — отказ.</text>
 <text x="75" y="975" class="sub">Каждая точка ● соединена через 2 кОм с GND. Все земли соедините вместе.</text>
 </svg>
 

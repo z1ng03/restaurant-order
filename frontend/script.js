@@ -450,12 +450,26 @@ function initCartPage() {
     }
   });
 
+  document.getElementById("age-rfid-btn").addEventListener("click", () => startAgeRfid(state));
+  document.getElementById("age-password-btn").addEventListener("click", async () => {
+    if (state.ageCommitting) return;
+    await stopAgeRfid(state);
+    document.getElementById("age-form").hidden = false;
+    document.getElementById("age-rfid-status").textContent = "Введите данные официанта после проверки документа.";
+    document.getElementById("waiter-login").focus();
+  });
+  document.getElementById("age-cancel-btn").addEventListener("click", async () => {
+    if (state.ageCommitting) return;
+    await stopAgeRfid(state);
+    toggleModal("age-modal", false);
+  });
   const ageForm = document.getElementById("age-form");
   ageForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     await submitAgeVerification(state, true);
   });
   document.getElementById("age-decline-btn").addEventListener("click", async () => {
+    await stopAgeRfid(state);
     toggleModal("age-modal", false);
     showResult({
       ok: false,
@@ -639,6 +653,8 @@ function initCartPage() {
     if (validation.requiresAgeVerification && validation.issues.some((i) => i.type === "AGE_VERIFICATION_REQUIRED")) {
       document.getElementById("age-form-error").hidden = true;
       document.getElementById("age-form").reset();
+      document.getElementById("age-form").hidden = true;
+      document.getElementById("age-rfid-status").textContent = "После проверки документа официант прикладывает свой брелок.";
       document.getElementById("age-account-hint").hidden = !ClientAuth.isLoggedIn();
       toggleModal("age-modal", true);
       return;
@@ -647,6 +663,64 @@ function initCartPage() {
     s.expectedPayable = validation.payableTotal;
     toggleModal("payment-modal", true);
     document.getElementById("payment-total").textContent = formatMoney(validation.payableTotal);
+  }
+
+  function ageBusy(busy) {
+    ["age-rfid-btn", "age-password-btn", "age-cancel-btn"].forEach(id => document.getElementById(id).disabled = busy);
+  }
+
+  async function stopAgeRfid(s) {
+    const serial = s.ageSerial;
+    s.ageSerial = null;
+    if (serial) {
+      try { await serial.send("CANCEL_AGE"); } catch {}
+      await serial.disconnect();
+    }
+    ageBusy(false);
+  }
+
+  async function startAgeRfid(s) {
+    if (s.ageSerial || s.ageCommitting) return;
+    const status = document.getElementById("age-rfid-status");
+    if (!SerialPayment.isSupported()) { status.textContent = "Откройте сайт в Chrome или Edge либо используйте пароль."; return; }
+    document.getElementById("age-form").hidden = true;
+    document.getElementById("age-rfid-btn").disabled = true;
+    status.textContent = "Выберите Arduino. Затем приложите брелок официанта.";
+    const serial = new SerialPayment(); s.ageSerial = serial;
+    const finish = async (uid, failure) => {
+      if (s.ageSerial !== serial || s.ageCommitting) return;
+      s.ageCommitting = true; ageBusy(true);
+      let ok = false;
+      try {
+        if (failure) throw new Error(failure);
+        status.textContent = "Проверяем брелок официанта…";
+        await api.post("/age-verification/rfid", { sessionId: getSessionId(), uid });
+        ok = true; status.textContent = "Возраст подтверждён официантом.";
+      } catch (error) { status.textContent = error.message; }
+      try { await serial.send(ok ? "TEST_GREEN" : "TEST_RED"); } catch {}
+      await new Promise(resolve => setTimeout(resolve, 1800));
+      await stopAgeRfid(s); s.ageCommitting = false;
+      if (ok) { toggleModal("age-modal", false); await beginCheckout(s); }
+    };
+    serial.onMessage = line => {
+      if (s.ageSerial !== serial || s.ageCommitting) return;
+      if (line === "WAITING_FOR_CARD") status.textContent = "Ожидаем брелок официанта. Индикатор жёлтый.";
+      else if (line.startsWith("AGE_CARD:")) void finish(line.slice(9));
+      else if (line === "AGE_DECLINED") void finish(null, "Эта метка не является брелком официанта. Попробуйте снова.");
+      else if (line === "AGE_TIMEOUT") void finish(null, "Время ожидания истекло. Повторите проверку.");
+      else if (line.startsWith("ERROR:")) void finish(null, line === "ERROR:WAITER_NOT_CONFIGURED" ? "Назначьте третий брелок на странице настройки RFID." : "Ошибка Arduino. Проверьте подключение и обновите прошивку.");
+    };
+    serial.onDisconnect = () => {
+      if (s.ageSerial !== serial || s.ageCommitting) return;
+      s.ageSerial = null; ageBusy(false); status.textContent = "Arduino отключена. Подключите снова или используйте пароль.";
+    };
+    try {
+      await serial.connect();
+      if (s.ageSerial === serial) await serial.send("START_AGE");
+    } catch (error) {
+      if (s.ageSerial !== serial) return;
+      await stopAgeRfid(s); status.textContent = error.message;
+    }
   }
 
   async function submitAgeVerification(s, verified) {

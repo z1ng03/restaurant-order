@@ -63,6 +63,7 @@ model User {
   name         String   @db.VarChar(100)
   login        String   @unique @db.VarChar(100)
   passwordHash String   @map("password_hash") @db.Text
+  rfidUid      String?  @unique @map("rfid_uid") @db.VarChar(29)
   /// Allowed values: ADMIN, WAITER, CHEF
   role         String   @db.VarChar(30)
   isActive     Boolean  @default(true) @map("is_active")

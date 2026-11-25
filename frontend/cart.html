@@ -6,7 +6,7 @@
     <title>Корзина — MAISON</title>
     <link rel="stylesheet" href="style.css?v=20261124">
     <meta name="theme-color" content="#285345">
-    <link rel="stylesheet" href="restaurant.css?v=20261124b">
+    <link rel="stylesheet" href="restaurant.css?v=20261125-rfid3">
 </head>
 <body class="cart-page-body">
 <a class="skip-link" href="#main-content">К содержимому</a>
@@ -113,7 +113,13 @@
             <div class="age-mark">21+</div>
             <h2 id="age-modal-title">Требуется подтверждение возраста</h2>
             <p>В заказе есть алкоголь или кальян. Позовите официанта - он проверит документ и подтвердит здесь.</p>
-            <form id="age-form" class="age-form">
+            <p id="age-rfid-status" role="status" aria-live="polite">После проверки документа официант прикладывает свой брелок.</p>
+            <div class="modal-actions vertical-actions">
+              <button class="order-btn" id="age-rfid-btn" type="button">Подтвердить брелком официанта</button>
+              <button class="secondary-btn" id="age-password-btn" type="button">Ввести логин и пароль</button>
+              <button class="secondary-btn" id="age-cancel-btn" type="button">Вернуться в корзину</button>
+            </div>
+            <form id="age-form" class="age-form" hidden>
                 <label>Логин официанта
                     <input type="text" id="waiter-login" name="waiterLogin" autocomplete="username" required>
                 </label>
@@ -197,8 +203,8 @@
     <script src="session.js?v=20261124"></script>
     <script src="receipt.js?v=20261124"></script>
     <script src="serial-payment.js?v=20261124"></script>
-    <script src="script.js?v=20261124"></script>
-    <p class="hardware-link" style="text-align:center"><a href="rfid-setup.html" target="_blank" rel="noopener">Настройка двух RFID-карт и проверка оборудования</a></p>
+    <script src="script.js?v=20261124-rfid3"></script>
+    <p class="hardware-link" style="text-align:center"><a href="rfid-setup.html" target="_blank" rel="noopener">Настройка трёх RFID-меток и проверка оборудования</a></p>
 <footer class="brand-footer"><strong>MAISON</strong><p>Хороший вкус. Тёплые встречи.</p><nav aria-label="Дополнительная навигация"><a href="index.html">Меню</a><a href="account.html">Личный кабинет</a><a href="admin.html">Для команды</a></nav></footer>
 </body>
 </html>

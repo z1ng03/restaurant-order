@@ -2,6 +2,42 @@ import { prisma } from "../../db/prisma";
 import { ConflictError, ValidationError } from "../../lib/errors";
 import { verifyPassword } from "../../lib/auth";
 import { assertSessionActive } from "../sessions/sessions.service";
+import { env } from "../../config/env";
+import { normalizeRfidUid } from "./rfid";
+
+function assertDemoRfid() {
+  if (env.isProduction) throw new ValidationError("UID-брелки доступны только в учебном режиме");
+}
+
+export async function enrollWaiterBadge(params: { waiterLogin: string; waiterPassword: string; uid: string }) {
+  assertDemoRfid();
+  const uid = normalizeRfidUid(params.uid);
+  const waiter = await prisma.user.findUnique({ where: { login: params.waiterLogin } });
+  if (!waiter?.isActive || !["WAITER", "ADMIN"].includes(waiter.role) ||
+      !await verifyPassword(params.waiterPassword, waiter.passwordHash)) {
+    throw new ValidationError("Неверный логин или пароль официанта");
+  }
+  try {
+    await prisma.user.update({ where: { userId: waiter.userId }, data: { rfidUid: uid } });
+  } catch (error) {
+    if ((error as { code?: string }).code === "P2002") throw new ConflictError("Этот брелок уже принадлежит другому сотруднику");
+    throw error;
+  }
+  return { waiterName: waiter.name, uid };
+}
+
+export async function recordRfidAgeVerification(params: { sessionId: bigint; uid: string }) {
+  assertDemoRfid();
+  await assertSessionActive(params.sessionId);
+  const waiter = await prisma.user.findUnique({ where: { rfidUid: normalizeRfidUid(params.uid) } });
+  if (!waiter?.isActive || !["WAITER", "ADMIN"].includes(waiter.role)) {
+    throw new ValidationError("Брелок не привязан к действующему официанту");
+  }
+  const record = await prisma.ageVerification.create({ data: {
+    sessionId: params.sessionId, verified: true, verifiedBy: waiter.userId, verifiedAt: new Date(),
+  } });
+  return { verificationId: record.verificationId, verified: true, waiterName: waiter.name };
+}
 
 /**
  * ТЗ §5: "К клиенту подходит официант и проверяет возраст ... Проверка
@@ -9,15 +45,7 @@ import { assertSessionActive } from "../sessions/sessions.service";
  * check is scoped to the *session*, not to one order, so one confirmed
  * check covers every 21+ order placed for the rest of that visit.
  *
- * The ТЗ doesn't specify exactly how the waiter's identity reaches the
- * system at this step (unlike payment, which explicitly uses the
- * card-tap/Arduino flow). The simplest faithful reading - a real staff
- * member's login/password, entered on the table's monitor when they walk
- * over - is what's implemented here: it satisfies "verified_by = an actual
- * authenticated waiter" without inventing hardware the ТЗ never mentions.
- * If a dedicated waiter device is added later, this is the one place to
- * change (swap the inline credential check for the same JWT auth the
- * kitchen/waiter monitors already use).
+ * Password confirmation remains available beside the demo RFID staff badge flow.
  */
 export async function recordAgeVerification(params: {
   sessionId: bigint;

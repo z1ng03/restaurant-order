@@ -4,9 +4,10 @@ const messages={
   READER_READY:'Arduino готова.', WAITING_FOR_CARD:'Приложите карту к антенне (ожидание до 60 секунд).',
   ENROLLED_APPROVED:'Карта «Успех» сохранена. Уберите её от антенны.',
   ENROLLED_DECLINED:'Карта «Отказ» сохранена. Уберите её от антенны.',
+  ENROLLED_WAITER:'Брелок сохранён в Arduino. Теперь привяжите его к официанту ниже.',
   PAYMENT_APPROVED:'Оплата одобрена (учебная проверка).', PAYMENT_DECLINED:'Оплата отклонена (учебная проверка).',
   PAYMENT_CANCELLED:'Ожидание отменено.', PAYMENT_TIMEOUT:'Время ожидания истекло. Повторите проверку.',
-  'ERROR:SAME_CARD':'Эта карта уже назначена другому результату. Возьмите вторую карту.',
+  'ERROR:SAME_CARD':'Эта карта уже назначена другому результату. Возьмите другую метку.',
   'ERROR:CARDS_NOT_CONFIGURED':'Сначала назначьте обе карты.',
   'ERROR:RC522_NOT_FOUND':'RC522 не найден. Отключите USB и проверьте схему подключения.'
 };
@@ -23,6 +24,7 @@ $('connect').onclick=async()=> {
     if(device!==current) return;
     log(line);
     if(messages[line] && (line!=='READER_READY' || document.getElementById("disconnect").disabled)) $('status').textContent=messages[line];
+    if(line.startsWith('WAITER_UID:')) $('waiter').textContent=line.slice(11);
     if(line.startsWith('APPROVED_UID:')) $('approved').textContent=line.slice(13);
     if(line.startsWith('DECLINED_UID:')) $('declined').textContent=line.slice(13);
     if(line.startsWith('ENROLLED_')) void current.send('STATUS').catch(error=>{$('status').textContent=error.message;});
@@ -40,3 +42,16 @@ document.querySelectorAll('[data-command]').forEach(button=>button.onclick=async
   try { await device.send(button.dataset.command); }
   catch(error) { $('status').textContent=error.message; }
 });
+
+$('badge-form').onsubmit=async event=> {
+  event.preventDefault();
+  const uid=$('waiter').textContent.trim();
+  const button=event.submitter; button.disabled=true;
+  try {
+    if(!/^(?:[0-9A-F]{2}:){3,9}[0-9A-F]{2}$/.test(uid)) throw new Error('Сначала назначьте и прочитайте брелок официанта в Arduino.');
+    const result=await api.post('/age-verification/rfid/enroll',{uid,waiterLogin:$('badge-login').value.trim(),waiterPassword:$('badge-password').value});
+    $('badge-status').textContent='Брелок привязан: '+result.waiterName+'. Можно подтверждать возраст в корзине.';
+    $('badge-password').value='';
+  } catch(error) { $('badge-status').textContent=error.message; }
+  finally { button.disabled=false; }
+};

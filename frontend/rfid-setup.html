@@ -1,21 +1,28 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Настройка RFID — MAISON</title><link rel="stylesheet" href="style.css?v=20261124">    <meta name="theme-color" content="#285345">
-    <link rel="stylesheet" href="restaurant.css?v=20261124b">
+    <link rel="stylesheet" href="restaurant.css?v=20261125-rfid3">
 </head><body class="hardware-body">
 <a class="skip-link" href="#main-content">К содержимому</a>
 <header class="brand-header"><div class="brand-header-inner"><a class="brand" href="index.html" aria-label="MAISON — меню ресторана"><strong>MAISON</strong><small>Kitchen & lounge</small></a><nav class="brand-nav" aria-label="Основная навигация"><a href="index.html">Меню</a><a href="orders.html">Мои заказы</a><a href="account.html">Кабинет</a><a href="cart.html" class="nav-cart">Корзина</a></nav></div></header>
-<main id="main-content"><h1>Две карты. Два результата.</h1><p>Учебная оплата: Arduino Uno + RC522 + RGB + пищалка.</p>
+<main id="main-content"><h1>Три метки: оплата и возраст.</h1><p>Учебная оплата: Arduino Uno + RC522 + RGB.</p>
 <section><h2>1. Подключение</h2><p>Откройте эту страницу в Chrome или Edge на localhost. Закройте монитор порта Arduino и другие вкладки, использующие считыватель.</p>
 <button id="connect">Подключить Arduino</button><button id="disconnect" disabled>Отключить</button><p id="status" role="status" aria-live="polite">Считыватель не подключён.</p></section>
 <section><h2>2. Назначение карт</h2><p>Нажмите кнопку и приложите нужную карту. Между действиями убирайте карту от антенны. Назначение сохраняется в Arduino.</p>
 <button data-command="ENROLL_APPROVED" disabled>Назначить карту «Успех»</button><button data-command="ENROLL_DECLINED" disabled>Назначить карту «Отказ»</button>
+<button data-command="ENROLL_WAITER" disabled>Назначить брелок официанта</button>
+<p>Брелок официанта: <strong id="waiter">не прочитано</strong></p>
 <p>Успех: <strong id="approved">не прочитано</strong><br>Отказ: <strong id="declined">не прочитано</strong></p></section>
-<section><h2>3. Проверка</h2><button data-command="START_PAYMENT" disabled>Проверить карту</button><button data-command="CANCEL_PAYMENT" disabled>Отменить / выключить</button><br>
-<button data-command="TEST_GREEN" disabled>Зелёный + один сигнал</button><button data-command="TEST_RED" disabled>Красный + два сигнала</button><button data-command="TEST_BLUE" disabled>Синий</button>
+<section><h2>3. Привязка брелка к официанту</h2>
+<p>После назначения брелка в Arduino сохраните его за сотрудником. Повторная привязка заменяет предыдущий брелок этого сотрудника.</p>
+<form id="badge-form"><label>Логин официанта <input id="badge-login" autocomplete="username" required></label>
+<label>Пароль <input id="badge-password" type="password" autocomplete="current-password" required></label>
+<button type="submit">Привязать прочитанный брелок</button></form><p id="badge-status" role="status"></p></section>
+<section><h2>4. Проверка</h2><button data-command="START_PAYMENT" disabled>Проверить карту</button><button data-command="CANCEL_PAYMENT" disabled>Отменить / выключить</button><br>
+<button data-command="TEST_GREEN" disabled>Зелёный — успех</button><button data-command="TEST_RED" disabled>Красный — отказ</button><button data-command="TEST_YELLOW" disabled>Жёлтый — ожидание</button>
 <p>После проверки нажмите «Отключить» и перейдите <a href="index.html?monitor=1">в меню ресторана</a>. В корзине выберите оплату картой и подключите Arduino.</p>
 <p class="note">Зелёный означает одобрение учебной карты. Сохранение заказа подтверждает сайт после ответа сервера. Денежных операций нет.</p></section>
 <section><h2>Подключение проводов</h2><p><strong>Меняйте провода только при отключённом USB.</strong> RC522 питается от 3.3V. Выходы Uno на входы RC522 подключайте через четыре делителя: Uno → 1 кОм → вход RC522; от каждого входа RC522 → 2 кОм → GND.</p>
-<table><tr><th>Устройство</th><th>Arduino Uno</th></tr><tr><td>RC522 SDA / SS</td><td>D10 через делитель 1 кОм / 2 кОм</td></tr><tr><td>RC522 SCK</td><td>D13 через делитель 1 кОм / 2 кОм</td></tr><tr><td>RC522 MOSI</td><td>D11 через делитель 1 кОм / 2 кОм</td></tr><tr><td>RC522 MISO</td><td>D12</td></tr><tr><td>RC522 RST</td><td>D9 через делитель 1 кОм / 2 кОм</td></tr><tr><td>RC522 3.3V / GND / IRQ</td><td>3.3V / GND / не подключать</td></tr><tr><td>RGB R / G / B</td><td>D5 / D6 / D7, каждый через 330 Ом</td></tr><tr><td>RGB общий катод, «−»</td><td>GND</td></tr><tr><td>Пассивный пьезоэлемент + / −</td><td>D4 через 100–220 Ом / GND</td></tr></table>
-<p>Для RGB с общим анодом: общий контакт → 5V, в скетче COMMON_ANODE=true. Для активной пищалки измените ACTIVE_BUZZER=true. Для пищалки неизвестного тока используйте транзисторный ключ; подробности — в инструкции RFID_SETUP.md.</p></section>
+<table><tr><th>Устройство</th><th>Arduino Uno</th></tr><tr><td>RC522 SDA / SS</td><td>D10 через делитель 1 кОм / 2 кОм</td></tr><tr><td>RC522 SCK</td><td>D13 через делитель 1 кОм / 2 кОм</td></tr><tr><td>RC522 MOSI</td><td>D11 через делитель 1 кОм / 2 кОм</td></tr><tr><td>RC522 MISO</td><td>D12</td></tr><tr><td>RC522 RST</td><td>D9 через делитель 1 кОм / 2 кОм</td></tr><tr><td>RC522 3.3V / GND / IRQ</td><td>3.3V / GND / не подключать</td></tr><tr><td>RGB R / G / B</td><td>D5 / D6 / D7, каждый через 330 Ом</td></tr><tr><td>RGB общий катод, «−»</td><td>GND</td></tr></table>
+<p>Для RGB с общим анодом: общий контакт → 5V, в скетче COMMON_ANODE=true. Пищалка не используется; D4 оставлен свободным.</p></section>
 <section><h2>Журнал устройства</h2><pre id="log"></pre></section>
-<script src="serial-payment.js?v=20261124"></script><script src="rfid-setup.js?v=20261124"></script></main><footer class="brand-footer"><strong>MAISON</strong><p>Хороший вкус. Тёплые встречи.</p><nav aria-label="Дополнительная навигация"><a href="index.html">Меню</a><a href="account.html">Личный кабинет</a><a href="admin.html">Для команды</a></nav></footer>
+<script src="api.js?v=20261124"></script><script src="serial-payment.js?v=20261124"></script><script src="rfid-setup.js?v=20261124-rfid3"></script></main><footer class="brand-footer"><strong>MAISON</strong><p>Хороший вкус. Тёплые встречи.</p><nav aria-label="Дополнительная навигация"><a href="index.html">Меню</a><a href="account.html">Личный кабинет</a><a href="admin.html">Для команды</a></nav></footer>
 </body></html>
